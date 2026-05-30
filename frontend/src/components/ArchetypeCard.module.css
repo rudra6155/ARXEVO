@@ -1,0 +1,315 @@
+/* ─── Section wrapper ───────────────────────────────────────── */
+.section {
+  position: relative;
+  background: var(--bg, #0A0E1A);
+  padding: 120px 48px 140px;
+  overflow: hidden;
+}
+
+.sectionLabel {
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: var(--muted, #8892A4);
+  text-transform: uppercase;
+  margin: 0 0 20px;
+}
+
+.sectionTitle {
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-weight: 700;
+  font-size: clamp(32px, 5vw, 56px);
+  color: var(--text, #F8FAFC);
+  margin: 0 0 80px;
+  line-height: 1.1;
+}
+
+/* ─── Card grid ─────────────────────────────────────────────── */
+.cardGrid {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+/* ─── Single card ───────────────────────────────────────────── */
+.card {
+  position: relative;
+  width: 280px;
+  min-height: 400px;
+  background: #0D1220;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+  transform-style: preserve-3d;
+  will-change: transform;
+  flex-shrink: 0;
+
+  /* SVG noise texture overlay via pseudo */
+  isolation: isolate;
+}
+
+/* Noise grain */
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Holographic glare layer */
+.glare {
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 20;
+  background: radial-gradient(
+    circle at 50% 50%,
+    rgba(255, 255, 255, 0.08) 0%,
+    transparent 60%
+  );
+}
+
+/* Top accent bar */
+.accentBar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 4px;
+  width: 100%;
+  border-radius: 12px 12px 0 0;
+  transform-origin: left center;
+  animation: slideInBar 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+  z-index: 2;
+}
+
+@keyframes slideInBar {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* ─── Portrait area ─────────────────────────────────────────── */
+.portrait {
+  position: relative;
+  height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.portraitGlow {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  width: 120px;
+  height: 120px;
+  margin: auto;
+  filter: blur(40px);
+  opacity: 0.35;
+}
+
+.symbolWrap {
+  position: relative;
+  z-index: 2;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ─── Card body ─────────────────────────────────────────────── */
+.body {
+  position: relative;
+  z-index: 3;
+  padding: 0 20px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.monoTag {
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  color: var(--muted, #8892A4);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.archetypeName {
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-weight: 700;
+  font-size: 22px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  line-height: 1.1;
+  margin-bottom: 8px;
+}
+
+.originLine {
+  font-family: var(--font-inter), sans-serif;
+  font-weight: 300;
+  font-style: italic;
+  font-size: 12px;
+  color: var(--muted, #8892A4);
+  line-height: 1.6;
+  margin-bottom: 14px;
+}
+
+.divider {
+  height: 1px;
+  margin-bottom: 14px;
+}
+
+/* ─── Trait bars ────────────────────────────────────────────── */
+.traits {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.traitRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.traitLabel {
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  color: var(--muted, #8892A4);
+  text-transform: uppercase;
+  width: 80px;
+  flex-shrink: 0;
+}
+
+.traitBarTrack {
+  flex: 1;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+}
+
+.traitBarFill {
+  height: 100%;
+  border-radius: 2px;
+  width: 0%;
+  transition: width 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.traitBarFill.animated {
+  width: var(--trait-value);
+}
+
+.traitPct {
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 9px;
+  color: var(--muted, #8892A4);
+  width: 28px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* ─── Stats row ─────────────────────────────────────────────── */
+.statsRow {
+  display: flex;
+  gap: 0;
+  margin-bottom: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.statCell {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 4px;
+  gap: 2px;
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.statCell:last-child {
+  border-right: none;
+}
+
+.statKey {
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 8px;
+  letter-spacing: 0.1em;
+  color: var(--muted, #8892A4);
+  text-transform: uppercase;
+}
+
+.statVal {
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 10px;
+  color: var(--text, #F8FAFC);
+  opacity: 0.5;
+}
+
+/* ─── Share button ──────────────────────────────────────────── */
+.shareBtn {
+  width: 100%;
+  font-family: var(--font-jetbrains-mono), monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  background: transparent;
+  border: 1px solid currentColor;
+  border-radius: 4px;
+  padding: 10px;
+  cursor: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  opacity: 0.6;
+}
+
+.shareBtn:hover {
+  opacity: 1;
+  transform: translateY(-1px);
+}
+
+/* ─── Reduced motion ────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .accentBar {
+    animation: none;
+    transform: scaleX(1);
+  }
+  .traitBarFill {
+    transition: none;
+  }
+}
+
+/* ─── Mobile ────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .section {
+    padding: 80px 24px 100px;
+  }
+  .cardGrid {
+    gap: 20px;
+  }
+  .shareBtn {
+    cursor: pointer;
+  }
+}
