@@ -5,8 +5,9 @@
  * PRIVACY: essay text is sent over HTTPS and never persisted on the client.
  */
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API_BASE_URL = (
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
+).replace(/\/$/, "");
 
 // --- Types matching the backend AnalysisResponse schema ---
 
