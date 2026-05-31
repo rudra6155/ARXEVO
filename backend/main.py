@@ -12,8 +12,9 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:3000",
         "http://127.0.0.1:3000",
-        "https://*.vercel.app",
-        "https://*.railway.app",
+        "http://localhost:8080",
+        "https://arxevo.filtree.in",
+        "http://arxevo.filtree.in",
     ],
     allow_origin_regex=r"https://.*\.(vercel\.app|railway\.app)",
     allow_credentials=True,
