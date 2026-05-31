@@ -77,7 +77,7 @@ export default function Footer() {
           letterSpacing: "0.1em",
         }}
       >
-        © 2026 ARXEVO
+        © {new Date().getFullYear()} ARXEVO
       </span>
     </footer>
   );

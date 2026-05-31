@@ -64,6 +64,12 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Keyboard focus styles — gold outline, intentional look */
+:focus-visible {
+  outline: 1px solid #b8960c;
+  outline-offset: 3px;
+}
+
 body {
   background-color: var(--ink);
   color: var(--cream);
@@ -78,6 +84,13 @@ body {
 @media (max-width: 768px) {
   body {
     cursor: auto;
+  }
+
+  /* Cormorant Garamond minimum 16px on mobile for legibility */
+  .font-cormorant,
+  [style*="Cormorant"],
+  [style*="cormorant"] {
+    font-size: max(16px, inherit) !important;
   }
 }
 

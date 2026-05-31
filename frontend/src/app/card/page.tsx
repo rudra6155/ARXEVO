@@ -218,18 +218,44 @@ export default function CardPage() {
     await document.fonts.ready;
     const { default: h2c } = await import("html2canvas");
 
-    // Temporarily show watermark
+    // Temporarily show watermark and capture border
     const watermark = document.getElementById("arxevo-watermark");
     const border = document.getElementById("arxevo-capture-border");
     if (watermark) watermark.style.opacity = "1";
     if (border) border.style.opacity = "1";
 
-    const canvas = await h2c(cardRef.current, {
+    // ── FIX: temporarily expand the card to show ALL content ──
+    const cardEl = cardRef.current;
+    const originalHeight = cardEl.style.height;
+    const originalMinHeight = cardEl.style.minHeight;
+    const originalOverflow = cardEl.style.overflow;
+    const originalPaddingBottom = cardEl.style.paddingBottom;
+
+    cardEl.style.height = "auto";
+    cardEl.style.minHeight = "600px";
+    cardEl.style.overflow = "visible";
+    cardEl.style.paddingBottom = "60px";
+
+    // Allow reflow before measuring
+    await new Promise(resolve => requestAnimationFrame(resolve));
+    await new Promise(resolve => requestAnimationFrame(resolve));
+
+    const captureHeight = Math.max(cardEl.scrollHeight, 1350);
+
+    const canvas = await h2c(cardEl, {
       backgroundColor: "#111109",
-      scale: 2.25,          // 480 × 2.25 = 1080px, 600 × 2.25 = 1350px
+      scale: 2.25,          // 480 × 2.25 = 1080px wide
       useCORS: true,
       logging: false,
+      height: captureHeight,
+      windowHeight: captureHeight,
     });
+
+    // Restore original styles
+    cardEl.style.height = originalHeight;
+    cardEl.style.minHeight = originalMinHeight;
+    cardEl.style.overflow = originalOverflow;
+    cardEl.style.paddingBottom = originalPaddingBottom;
 
     if (watermark) watermark.style.opacity = "0";
     if (border) border.style.opacity = "0";
@@ -255,7 +281,7 @@ export default function CardPage() {
   const handleWhatsApp = useCallback(() => {
     if (!profile) return;
     const meta = getMeta(profile.archetype);
-    const text = `I just discovered my ARXEVO archetype: ${meta.label}.\n\n"${profile.origin_story.slice(0, 120)}..."\n\nDiscover yours: https://arxevo.app`;
+    const text = `I just discovered my ARXEVO archetype: ${meta.label}.\n\n"${profile.origin_story.slice(0, 120)}..."\n\nDiscover yours: https://arxevo.filtree.in`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
   }, [profile]);
 
@@ -266,7 +292,7 @@ export default function CardPage() {
   const handleTwitter = useCallback(() => {
     if (!profile) return;
     const meta = getMeta(profile.archetype);
-    const text = `Just discovered I'm a ${meta.label} on ARXEVO.\n\n"${profile.origin_story.slice(0, 100)}..."\n\nhttps://arxevo.app #ARXEVO`;
+    const text = `Just discovered I'm a ${meta.label} on ARXEVO.\n\n"${profile.origin_story.slice(0, 100)}..."\n\nhttps://arxevo.filtree.in #ARXEVO`;
     window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, "_blank");
   }, [profile]);
 
@@ -354,9 +380,11 @@ export default function CardPage() {
         </Link>
         <button
           onClick={() => router.push("/onboard")}
-          style={{ fontFamily: "'DM Mono', monospace", fontSize: "9px", letterSpacing: "0.15em", textTransform: "uppercase", color: "#8a7e6e", background: "transparent", border: "1px solid #2a2820", padding: "10px 20px", cursor: "pointer" }}
+          style={{ fontFamily: "'DM Mono', monospace", fontSize: "9px", letterSpacing: "0.15em", textTransform: "uppercase", color: "#8a7e6e", background: "transparent", border: "1px solid #2a2820", padding: "10px 20px", cursor: "pointer", outline: "none" }}
           onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#b8960c"; e.currentTarget.style.color = "#e8e0d0"; }}
           onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#2a2820"; e.currentTarget.style.color = "#8a7e6e"; }}
+          onFocus={(e) => { e.currentTarget.style.outline = "1px solid #b8960c"; e.currentTarget.style.outlineOffset = "3px"; }}
+          onBlur={(e) => { e.currentTarget.style.outline = "none"; }}
         >
           New Arc
         </button>
@@ -370,18 +398,18 @@ export default function CardPage() {
           ref={cardWrapRef}
           style={{ width: "100%", opacity: 0 }}
         >
-          {/* THE CARD — 480×600 → captured at 1080×1350 for Instagram */}
+          {/* THE CARD — height: auto so origin story never clips */}
           <div
             ref={cardRef}
             style={{
               width: "480px",
-              height: "600px",
+              height: "auto",
+              minHeight: "600px",
               maxWidth: "100%",
               backgroundColor: "#111109",
               backgroundImage: `radial-gradient(circle at 50% 0%, rgba(${hexToRgb(meta.color)}, 0.15) 0%, transparent 60%)`,
               border: "1px solid #2a2820",
               borderRadius: 0,
-              overflow: "hidden",
               position: "relative",
               margin: "0 auto",
             }}
@@ -409,7 +437,7 @@ export default function CardPage() {
             </div>
 
             {/* Card body */}
-            <div style={{ padding: "24px 28px 24px", height: "calc(600px - 4px - 44px)", display: "flex", flexDirection: "column" }}>
+            <div style={{ padding: "24px 28px 32px", display: "flex", flexDirection: "column" }}>
 
               {/* Archetype symbol + name */}
               <div style={{ marginBottom: "20px" }}>
@@ -439,8 +467,8 @@ export default function CardPage() {
                 </span>
               )}
 
-              {/* Origin story — most important text on card */}
-              <div style={{ flex: 1, borderLeft: "2px solid #2a2820", paddingLeft: "20px", display: "flex", alignItems: "flex-start" }}>
+              {/* Origin story — no height restriction, no overflow hidden */}
+              <div style={{ borderLeft: "2px solid #2a2820", paddingLeft: "20px", marginBottom: "24px" }}>
                 <p
                   ref={originRef}
                   style={{
@@ -451,6 +479,7 @@ export default function CardPage() {
                     color: "var(--cream)",
                     lineHeight: 1.9,
                     opacity: 0,
+                    // No max-height, no overflow restrictions
                   }}
                 >
                   {profile.origin_story}
@@ -458,7 +487,7 @@ export default function CardPage() {
               </div>
 
               {/* Traits — 1px bars */}
-              <div style={{ marginTop: "24px" }}>
+              <div style={{ marginTop: "4px" }}>
                 <span style={{ fontFamily: "'DM Mono', monospace", fontSize: "9px", letterSpacing: "0.25em", color: "#4a4438", textTransform: "uppercase", display: "block", marginBottom: "12px" }}>
                   TRAIT ANALYSIS
                 </span>
@@ -544,13 +573,53 @@ export default function CardPage() {
                 cursor: "pointer",
                 transition: "border-color 0.3s ease, color 0.3s ease",
                 opacity: 0,
+                outline: "none",
               }}
               onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#b8960c"; e.currentTarget.style.color = "#e8e0d0"; }}
               onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#2a2820"; e.currentTarget.style.color = "#8a7e6e"; }}
+              onFocus={(e) => { e.currentTarget.style.outline = "1px solid #b8960c"; e.currentTarget.style.outlineOffset = "3px"; }}
+              onBlur={(e) => { e.currentTarget.style.outline = "none"; }}
             >
               {label}
             </button>
           ))}
+        </div>
+
+        {/* ─── Nav links below share buttons (Polish 4) ─── */}
+        <div style={{ width: "480px", maxWidth: "100%", margin: "24px auto 0", display: "flex", flexDirection: "column", gap: "0" }}>
+          <div style={{ height: "1px", backgroundColor: "#1a1a16", marginBottom: "20px" }} />
+          <div style={{ display: "flex", gap: "32px" }}>
+            <Link
+              href="/onboard"
+              style={{
+                fontFamily: "'DM Mono', monospace",
+                fontSize: "11px",
+                letterSpacing: "0.1em",
+                color: "#8a7e6e",
+                textDecoration: "none",
+                transition: "color 0.2s ease",
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.color = "#e8e0d0"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = "#8a7e6e"; }}
+            >
+              Analyze another essay →
+            </Link>
+            <Link
+              href="/faq"
+              style={{
+                fontFamily: "'DM Mono', monospace",
+                fontSize: "11px",
+                letterSpacing: "0.1em",
+                color: "#8a7e6e",
+                textDecoration: "none",
+                transition: "color 0.2s ease",
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.color = "#e8e0d0"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = "#8a7e6e"; }}
+            >
+              What does this mean? →
+            </Link>
+          </div>
         </div>
 
         {/* Divider + Waitlist */}
@@ -613,8 +682,8 @@ export default function CardPage() {
                   borderRadius: 0,
                   transition: "border-color 0.3s ease",
                 }}
-                onFocus={(e) => { e.currentTarget.style.borderColor = "#b8960c"; }}
-                onBlur={(e) => { e.currentTarget.style.borderColor = "#2a2820"; }}
+                onFocus={(e) => { e.currentTarget.style.borderColor = "#b8960c"; e.currentTarget.style.outline = "1px solid #b8960c"; e.currentTarget.style.outlineOffset = "3px"; }}
+                onBlur={(e) => { e.currentTarget.style.borderColor = "#2a2820"; e.currentTarget.style.outline = "none"; }}
               />
               <button
                 type="submit"
@@ -631,6 +700,7 @@ export default function CardPage() {
                   cursor: waitlistSubmitting ? "not-allowed" : "pointer",
                   transition: "all 0.3s ease",
                   alignSelf: "flex-start",
+                  outline: "none",
                 }}
                 onMouseEnter={(e) => {
                   if (!waitlistSubmitting) { e.currentTarget.style.backgroundColor = "#e8e0d0"; e.currentTarget.style.color = "#0a0a08"; }
@@ -639,6 +709,8 @@ export default function CardPage() {
                   e.currentTarget.style.backgroundColor = "transparent";
                   e.currentTarget.style.color = waitlistSubmitting ? "#4a4438" : "#e8e0d0";
                 }}
+                onFocus={(e) => { e.currentTarget.style.outline = "1px solid #b8960c"; e.currentTarget.style.outlineOffset = "3px"; }}
+                onBlur={(e) => { e.currentTarget.style.outline = "none"; }}
               >
                 {waitlistSubmitting ? "Joining..." : "JOIN THE WAITLIST"}
               </button>
@@ -650,9 +722,11 @@ export default function CardPage() {
         <div style={{ width: "480px", maxWidth: "100%", margin: "48px auto 0", display: "flex", gap: "16px", alignItems: "center" }}>
           <button
             onClick={() => router.push("/onboard")}
-            style={{ fontFamily: "'DM Mono', monospace", fontSize: "9px", letterSpacing: "0.15em", textTransform: "uppercase", color: "#8a7e6e", background: "transparent", border: "1px solid #2a2820", padding: "12px 20px", cursor: "pointer" }}
+            style={{ fontFamily: "'DM Mono', monospace", fontSize: "9px", letterSpacing: "0.15em", textTransform: "uppercase", color: "#8a7e6e", background: "transparent", border: "1px solid #2a2820", padding: "12px 20px", cursor: "pointer", outline: "none" }}
             onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#b8960c"; e.currentTarget.style.color = "#e8e0d0"; }}
             onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#2a2820"; e.currentTarget.style.color = "#8a7e6e"; }}
+            onFocus={(e) => { e.currentTarget.style.outline = "1px solid #b8960c"; e.currentTarget.style.outlineOffset = "3px"; }}
+            onBlur={(e) => { e.currentTarget.style.outline = "none"; }}
           >
             New Arc
           </button>
@@ -664,6 +738,16 @@ export default function CardPage() {
           </button>
         </div>
       </div>
+
+      {/* Mobile responsive styles */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        @media (max-width: 480px) {
+          [data-card-container] {
+            width: 100% !important;
+            max-width: 100% !important;
+          }
+        }
+      `}} />
     </div>
   );
 }
