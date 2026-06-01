@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import SkeletonCursor from "@/components/SkeletonCursor";
+import AuthProvider from "@/components/AuthProvider";
 
 export const metadata: Metadata = {
   title: {
@@ -43,8 +44,10 @@ export default function RootLayout({
         <link rel="icon" href="/icon.svg" type="image/svg+xml" />
       </head>
       <body className="min-h-full flex flex-col">
-        <SkeletonCursor />
-        {children}
+        <AuthProvider>
+          <SkeletonCursor />
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );

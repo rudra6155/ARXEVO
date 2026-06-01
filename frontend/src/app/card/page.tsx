@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import gsap from "gsap";
 import SplitType from "split-type";
 import Link from "next/link";
+import { saveCard, signInWithGoogle, saveToWaitlist } from "@/lib/auth";
+import { useAuth } from "@/components/AuthProvider";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
 
@@ -135,6 +137,12 @@ export default function CardPage() {
   const [waitlistEmail, setWaitlistEmail] = useState("");
   const [waitlistSubmitting, setWaitlistSubmitting] = useState(false);
   const [waitlistDone, setWaitlistDone] = useState(false);
+  const [waitlistPosition, setWaitlistPosition] = useState<number | null>(null);
+
+  // Auth & Save
+  const { user } = useAuth();
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
 
   const cardRef    = useRef<HTMLDivElement>(null);
   const cardWrapRef = useRef<HTMLDivElement>(null);
@@ -209,6 +217,45 @@ export default function CardPage() {
 
     return () => { tl.kill(); };
   }, [phase, profile]);
+
+  // ─── Auto-save on OAuth redirect ────────────────────────────────
+  useEffect(() => {
+    if (user && profile && saveStatus === "idle") {
+      const pending = sessionStorage.getItem("arxevo_pending_save");
+      if (pending === "true") {
+        sessionStorage.removeItem("arxevo_pending_save");
+        
+        const doSave = async () => {
+          setSaveStatus("saving");
+          try {
+            await saveCard(profile);
+            setSaveStatus("saved");
+          } catch (err) {
+            console.error(err);
+            setSaveStatus("idle");
+          }
+        };
+        doSave();
+      }
+    }
+  }, [user, profile, saveStatus]);
+
+  const handleSaveClick = async () => {
+    if (!profile) return;
+    if (!user) {
+      setShowAuthModal(true);
+      return;
+    }
+    
+    setSaveStatus("saving");
+    try {
+      await saveCard(profile);
+      setSaveStatus("saved");
+    } catch (err) {
+      console.error(err);
+      setSaveStatus("idle");
+    }
+  };
 
   // ─── Save card as Instagram-ready image ─────────────────────
   const handleSaveImage = useCallback(async () => {
@@ -299,24 +346,23 @@ export default function CardPage() {
   // ─── Waitlist submit ────────────────────────────────────────
   const handleWaitlistSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!waitlistEmail || waitlistSubmitting) return;
+    if (!waitlistEmail || waitlistSubmitting || !profile) return;
     setWaitlistSubmitting(true);
 
     try {
-      await fetch(`${API_BASE_URL}/waitlist`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: waitlistEmail }),
-      });
-    } catch {
-      // Graceful degradation — show success regardless
+      const res = await saveToWaitlist(waitlistEmail, profile.archetype);
+      setWaitlistPosition(res.position);
+      setWaitlistDone(true);
+    } catch (err: any) {
+      if (err.message === "Email already registered.") {
+        setWaitlistDone(true);
+      } else {
+        console.error(err);
+      }
     }
 
-    setTimeout(() => {
-      setWaitlistDone(true);
-      setWaitlistSubmitting(false);
-    }, 800);
-  }, [waitlistEmail, waitlistSubmitting]);
+    setWaitlistSubmitting(false);
+  }, [waitlistEmail, waitlistSubmitting, profile]);
 
   // ─── Missing state ───────────────────────────────────────────
   if (phase === "missing") {
@@ -350,10 +396,40 @@ export default function CardPage() {
   const traits = Object.entries(profile.traits ?? {});
 
   return (
+
     <div
       ref={pageRef}
       style={{ minHeight: "100vh", backgroundColor: "#0a0a08", color: "#e8e0d0", padding: "0 0 120px", position: "relative" }}
     >
+      {showAuthModal && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 2000, background: "rgba(10,10,8,0.95)", display: "flex", alignItems: "center", justifyContent: "center", padding: "24px" }}>
+          <div style={{ background: "#111109", border: "1px solid #2a2820", padding: "48px 32px", display: "flex", flexDirection: "column", alignItems: "center", maxWidth: "400px", width: "100%", textAlign: "center" }}>
+            <h2 style={{ fontFamily: "var(--font-cormorant)", fontStyle: "italic", fontSize: "28px", color: "var(--cream)", marginBottom: "16px" }}>Save your arc permanently.</h2>
+            <p style={{ fontFamily: "'DM Mono', monospace", fontSize: "13px", color: "#8a7e6e", marginBottom: "32px", lineHeight: 1.6 }}>Sign in to keep it. Your card belongs to you.</p>
+            <button
+              onClick={() => {
+                sessionStorage.setItem("arxevo_pending_save", "true");
+                signInWithGoogle();
+              }}
+              style={{
+                display: "flex", alignItems: "center", justifyContent: "center", gap: "12px",
+                width: "100%", background: "#e8e0d0", color: "#0a0a08", border: "none", borderRadius: 0, padding: "16px", cursor: "pointer", outline: "none", transition: "opacity 0.2s ease"
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.opacity = "0.9"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.opacity = "1"; }}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+              </svg>
+              <span style={{ fontFamily: "'DM Mono', monospace", fontSize: "13px", fontWeight: 500 }}>Continue with Google</span>
+            </button>
+            <button onClick={() => setShowAuthModal(false)} style={{ marginTop: "24px", fontFamily: "'DM Mono', monospace", fontSize: "10px", color: "#4a4438", background: "none", border: "none", cursor: "pointer", letterSpacing: "0.1em", textTransform: "uppercase" }}>Cancel</button>
+          </div>
+        </div>
+      )}
       {/* Reveal overlay */}
       <div
         ref={overlayRef}
@@ -553,7 +629,8 @@ export default function CardPage() {
         {/* Share buttons */}
         <div style={{ width: "480px", maxWidth: "100%", margin: "40px auto 0", display: "flex", gap: "12px", flexWrap: "wrap" }}>
           {[
-            { key: "save", label: "SAVE", fn: handleSaveImage },
+            { key: "save", label: saveStatus === "saved" ? "ARC SAVED." : saveStatus === "saving" ? "SAVING..." : "SAVE", fn: handleSaveClick },
+            { key: "download", label: "DOWNLOAD", fn: handleSaveImage },
             { key: "whatsapp", label: "WHATSAPP", fn: handleWhatsApp },
             { key: "instagram", label: "INSTAGRAM", fn: handleInstagram },
             { key: "twitter", label: "X", fn: handleTwitter },
@@ -656,7 +733,7 @@ export default function CardPage() {
           {waitlistDone ? (
             <div style={{ paddingTop: "8px" }}>
               <p style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 300, fontStyle: "italic", fontSize: "22px", color: "#e8e0d0", marginBottom: "8px" }}>
-                You are on the list.
+                You are #{waitlistPosition || "—"} in the queue.
               </p>
               <p style={{ fontFamily: "'DM Mono', monospace", fontSize: "10px", letterSpacing: "0.1em", color: "#4a4438" }}>
                 We will find your squad.
