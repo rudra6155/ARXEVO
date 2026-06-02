@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import SkeletonCursor from "@/components/SkeletonCursor";
 import AuthProvider from "@/components/AuthProvider";
+import ArcIcon from "@/components/ArcIcon";
 
 export const metadata: Metadata = {
   title: {
@@ -45,6 +46,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex flex-col">
         <AuthProvider>
+          <ArcIcon />
           <SkeletonCursor />
           {children}
         </AuthProvider>

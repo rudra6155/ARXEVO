@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
 import RevolverEntry  from "@/components/RevolverEntry";
 import GlassShatter, { GlassShatterRef } from "@/components/GlassShatter";
 import ContentTrack   from "@/components/ContentTrack";
@@ -10,14 +12,21 @@ import Footer         from "@/components/Footer";
 type AppState = "entry" | "transitioning" | "exploring";
 
 export default function Home() {
+  const router = useRouter();
   const [appState, setAppState] = useState<AppState | null>(null);
   const shatterRef = useRef<GlassShatterRef>(null);
 
   useEffect(() => {
-    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const isMobile = window.innerWidth <= 768;
-    setAppState(prefersReducedMotion || isMobile ? "exploring" : "entry");
-  }, []);
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        router.replace('/profile');
+      } else {
+        const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        const isMobile = window.innerWidth <= 768;
+        setAppState(prefersReducedMotion || isMobile ? "exploring" : "entry");
+      }
+    });
+  }, [router]);
 
   const handleShatterReady = () => {
     setAppState("transitioning");

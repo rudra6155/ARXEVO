@@ -11,7 +11,8 @@ export async function GET(request: NextRequest) {
     await supabase.auth.exchangeCodeForSession(code)
   }
   
+  // Always redirect to profile after auth
   return NextResponse.redirect(
-    new URL('/card', requestUrl.origin)
+    new URL('/profile', requestUrl.origin)
   )
 }

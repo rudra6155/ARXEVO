@@ -26,6 +26,12 @@ export async function saveCard(profileData: any) {
   const user = await getUser();
   if (!user) throw new Error("User not authenticated");
 
+  // Upsert profile first
+  await supabase.from('profiles').upsert({
+    id: user.id,
+    email: user.email
+  });
+
   const { data, error } = await supabase
     .from('cards')
     .insert([

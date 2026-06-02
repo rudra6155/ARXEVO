@@ -16,6 +16,7 @@ interface ArxevoProfile {
   secondary_archetype?: string;
   origin_story: string;
   traits: Record<string, number>;
+  confidence?: number;
 }
 
 // ─── Archetype meta — muted, sophisticated palette ─────────────
@@ -416,6 +417,15 @@ export default function CardPage() {
             <p style={{ fontFamily: "'DM Mono', monospace", fontSize: "13px", color: "#8a7e6e", marginBottom: "32px", lineHeight: 1.6 }}>Sign in to keep it. Your card belongs to you.</p>
             <button
               onClick={() => {
+                if (profile) {
+                  sessionStorage.setItem("pending_card", JSON.stringify({
+                    archetype: profile.archetype,
+                    secondary_archetype: profile.secondary_archetype,
+                    origin_story: profile.origin_story,
+                    traits: profile.traits,
+                    confidence: profile.confidence
+                  }));
+                }
                 sessionStorage.setItem("arxevo_pending_save", "true");
                 signInWithGoogle();
               }}
