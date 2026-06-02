@@ -143,6 +143,12 @@ export default function CardPage() {
   const { user } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3000);
+  };
 
   const cardRef    = useRef<HTMLDivElement>(null);
   const cardWrapRef = useRef<HTMLDivElement>(null);
@@ -230,6 +236,7 @@ export default function CardPage() {
           try {
             await saveCard(profile);
             setSaveStatus("saved");
+            showToast("Arc saved to your vault.");
           } catch (err) {
             console.error(err);
             setSaveStatus("idle");
@@ -251,6 +258,7 @@ export default function CardPage() {
     try {
       await saveCard(profile);
       setSaveStatus("saved");
+      showToast("Arc saved to your vault.");
     } catch (err) {
       console.error(err);
       setSaveStatus("idle");
@@ -816,6 +824,29 @@ export default function CardPage() {
         </div>
       </div>
 
+      {/* Toast Message */}
+      {toastMessage && (
+        <div style={{
+          position: "fixed",
+          bottom: "40px",
+          left: "50%",
+          transform: "translateX(-50%)",
+          zIndex: 3000,
+          background: "#111109",
+          border: "1px solid #b8960c",
+          padding: "12px 24px",
+          fontFamily: "'DM Mono', monospace",
+          fontSize: "12px",
+          color: "#b8960c",
+          letterSpacing: "0.1em",
+          textTransform: "uppercase",
+          boxShadow: "0 4px 20px rgba(0,0,0,0.5)",
+          animation: "fadeInOut 3s forwards"
+        }}>
+          {toastMessage}
+        </div>
+      )}
+
       {/* Mobile responsive styles */}
       <style dangerouslySetInnerHTML={{ __html: `
         @media (max-width: 480px) {
@@ -823,6 +854,12 @@ export default function CardPage() {
             width: 100% !important;
             max-width: 100% !important;
           }
+        }
+        @keyframes fadeInOut {
+          0% { opacity: 0; transform: translate(-50%, 20px); }
+          15% { opacity: 1; transform: translate(-50%, 0); }
+          85% { opacity: 1; transform: translate(-50%, 0); }
+          100% { opacity: 0; transform: translate(-50%, -20px); }
         }
       `}} />
     </div>

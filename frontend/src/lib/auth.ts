@@ -4,7 +4,7 @@ export async function signInWithGoogle() {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: typeof window !== 'undefined' ? `${window.location.origin}/card` : undefined,
+      redirectTo: typeof window !== 'undefined' ? `${window.location.origin}/auth/callback` : undefined,
     }
   });
   if (error) throw error;
