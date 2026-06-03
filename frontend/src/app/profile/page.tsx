@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getUser, getUserCards, signOut, saveCard } from "@/lib/auth";
+import { getUserCards, signOut, saveCard } from "@/lib/auth";
+import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 import { User } from "@supabase/supabase-js";
 import CharacterCard from "@/components/CharacterCard";
@@ -70,12 +71,22 @@ export default function ProfilePage() {
 
   useEffect(() => {
     async function loadData() {
-      const currentUser = await getUser();
-      if (!currentUser) {
-        router.push("/");
-        return;
+      let activeSession = null;
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        // Check for hash fragment (implicit flow)
+        const { data: { session: hashSession } } = await supabase.auth.getSession();
+        if (!hashSession) {
+          router.replace('/');
+          return;
+        }
+        activeSession = hashSession;
+      } else {
+        activeSession = session;
       }
-      setUser(currentUser);
+      
+      setUser(activeSession.user);
 
       // Check for pending_card
       const pendingCard = sessionStorage.getItem('pending_card');
@@ -101,6 +112,20 @@ export default function ProfilePage() {
       }
     }
     loadData();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (event === 'SIGNED_IN' && session) {
+          setUser(session.user);
+          // could fetch cards here, but loadData() covers initial load
+        }
+        if (event === 'SIGNED_OUT') {
+          router.replace('/');
+        }
+      }
+    );
+
+    return () => subscription.unsubscribe();
   }, [router]);
 
   if (loading) {

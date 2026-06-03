@@ -4,7 +4,11 @@ import { NextRequest, NextResponse } from 'next/server'
 export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url)
   const code = requestUrl.searchParams.get('code')
-  const origin = requestUrl.origin
+  
+  // Use environment variable for production URL
+  // Never trust requestUrl.origin in production
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL 
+    || requestUrl.origin
 
   if (code) {
     const supabase = createClient(
@@ -14,5 +18,7 @@ export async function GET(request: NextRequest) {
     await supabase.auth.exchangeCodeForSession(code)
   }
 
-  return NextResponse.redirect(new URL('/profile', origin))
+  return NextResponse.redirect(
+    new URL('/profile', siteUrl)
+  )
 }
