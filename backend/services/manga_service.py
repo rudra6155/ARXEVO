@@ -5,21 +5,6 @@ import time
 
 HF_API_KEY = os.getenv("HUGGINGFACE_API_KEY")
 
-# ─────────────────────────────────────────────────────────────────────────────
-# ENDPOINT NOTES (important — do NOT change the URL pattern):
-#
-#  router.huggingface.co/hf-inference/models/<model>
-#      ↑ correct for ALL standard HF-inference tasks (text-to-image, NLP, etc.)
-#      ↑ returns raw binary image bytes on 200, NOT JSON
-#
-#  router.huggingface.co/hf-inference/models/<model>/v1/images/generations
-#      ↑ WRONG — /v1/ paths are OpenAI-compat chat/LLM routes only
-#
-#  Request body: {"inputs": "<prompt>", "parameters": {...}}
-#      ↑ "inputs" key required — NOT "prompt", NOT "n", NOT "size"
-#      ↑ optional params go inside "parameters" dict
-# ─────────────────────────────────────────────────────────────────────────────
-
 MODEL_URL = (
     "https://router.huggingface.co/hf-inference/models/"
     "black-forest-labs/FLUX.1-schnell"
@@ -27,29 +12,21 @@ MODEL_URL = (
 
 
 def _post_and_parse(headers: dict, payload: dict, timeout: int = 90) -> str | None:
-    """POST to HF inference endpoint and return base64 data URL, or None on failure."""
     response = requests.post(MODEL_URL, headers=headers, json=payload, timeout=timeout)
-
-    # Log enough context to diagnose future issues
     print(f"HF status: {response.status_code} | content-type: {response.headers.get('content-type', '?')}")
 
     if response.status_code == 200:
         content_type = response.headers.get("content-type", "")
         if "image" in content_type or len(response.content) > 1000:
-            # Raw binary bytes — the expected success path
             img_b64 = base64.b64encode(response.content).decode("utf-8")
             ext = "png" if "png" in content_type else "jpeg"
             return f"data:image/{ext};base64,{img_b64}"
         else:
-            # Shouldn't happen on 200, but log it
             print(f"HF 200 but unexpected body: {response.text[:300]}")
             return None
-
     elif response.status_code in (503, 429):
-        # 503 = model loading, 429 = rate-limit — both are transient
         print(f"HF transient {response.status_code}: {response.text[:200]}")
         return "RETRY"
-
     else:
         print(f"HF API error {response.status_code}: {response.text[:400]}")
         return None
@@ -67,49 +44,93 @@ def generate_manga_cover(
         return None
 
     archetype_visuals = {
-        "architect": "geometric blueprint grids, structural frameworks, technical precision, city blueprints in background",
-        "catalyst": "explosive energy radiating outward, spark trails, dynamic breaking and reforming, kinetic force",
-        "anchor": "deep roots visible, interconnected web of people, concentric ripples across water, community",
-        "operator": "precise clockwork machinery, gears turning, systematic execution, mechanical perfection",
+        "architect": "blueprint schematics and structural frameworks in midground, city blueprints and engineering drawings emerging from the background, geometric precision in every corner",
+        "catalyst": "spark trails and kinetic energy radiating from the protagonist, shattered old structures transforming into new forms in midground, a reimagined world in the background",
+        "anchor": "an interconnected web of relationships and community in midground, deep roots intertwined with rippling water, a thriving community or institution in the background",
+        "operator": "precise gears and clockwork machinery turning in midground, systematic processes visualized as elegant mechanical systems, a completed mission or perfected achievement in the background",
     }
 
     visual = archetype_visuals.get(
-        archetype.lower(), "abstract personal power emanating outward"
+        archetype.lower(), "symbolic representations of the protagonist's defining journey in midground, their greatest achievement visualized in the background"
     )
     themes = ", ".join(key_themes[:3]) if key_themes else "journey, growth, determination"
-    story = origin_story[:200] if origin_story else ""
 
-    prompt = (
-        f"1990s Japanese anime magazine cover art, Newtype magazine style, "
-        f"Marvel comics energy, Image Comics epic scale. Professional editorial illustration. "
-        f"Magazine cover layout with masthead at top reading ARXEVO. "
-        f"Central protagonist hero figure, 65% of frame, determined expression looking toward horizon, "
-        f"human and relatable with signs of struggle, strong dramatic pose, "
-        f"detailed clothing with realistic folds and texture. "
-        f"Character archetype: {archetype.upper()}. "
-        f"Visual environment: {visual}. "
-        f"Themes: {themes}. "
-        f"Story context: {story}. "
-        f"Past struggles depicted behind character in shadow, future aspirations ahead in light. "
-        f"Character stands at transition point between darkness and hope. "
-        f"Art style: hand-painted anime illustration, cel animation color treatment, "
-        f"real brush textures, printed magazine texture, slight paper grain, "
-        f"halftone printing artifacts, 1990s collector edition. "
-        f"Masterpiece illustration, professional editorial artwork, extremely detailed, "
-        f"sharp focal hierarchy, strong composition, cinematic atmosphere, high contrast, rich shadows."
-    )
+    # Extract first sentence as the dramatic quote
+    first_sentence = ""
+    if origin_story:
+        parts = origin_story.replace("!", ".").replace("?", ".").split(".")
+        first_sentence = parts[0].strip() if parts else origin_story[:120].strip()
+        if len(first_sentence) > 120:
+            first_sentence = first_sentence[:117] + "..."
+
+    prompt = f"""The cover should feel like a collector's edition magazine from an alternate universe where this person became the protagonist of their own legendary story.
+
+Authentic 1990s Japanese anime magazine cover.
+Printed cel-animation aesthetic.
+Hand-painted illustration with visible brushwork.
+Editorial publishing design.
+Magazine cover, not a movie poster.
+
+Masthead at the very top reading "ARXEVO" in bold editorial font.
+Issue number "VOL.01" in top corner.
+Publication date and price in small editorial text near masthead.
+
+A short dramatic quote integrated as editorial caption text within the composition:
+"{first_sentence}"
+
+Foreground:
+The protagonist standing at the threshold of change.
+Human and relatable. Signs of effort and struggle on their face and posture.
+Distinct personality reflecting this archetype: {archetype.upper()}.
+Determined expression looking toward an uncertain future.
+Slight imperfections — not a generic hero.
+
+Midground:
+{visual}
+Symbolic representations of defining memories, struggles, failures, mentors, ambitions, and turning points from this story: {themes}.
+These symbols feel grounded, not floating — part of the environment.
+
+Background:
+Their future vision visualized as a city skyline, institution, invention, dream destination, or achievement.
+The background bleeds from dark shadow on the protagonist's side to light and possibility in the distance.
+
+Past, present, and future compressed into a single image.
+Narrative tension: the protagonist looks toward an unanswered future.
+
+Authentic magazine typography integrated throughout.
+Feature headline text as part of the cover design.
+Editorial sidebar text along one edge.
+Small publication details in margins.
+Collector-edition border design.
+Professional magazine cover layout with visual hierarchy.
+
+Art style: hand-painted anime illustration, cel animation color treatment,
+real brush textures, printed magazine paper texture, slight paper grain,
+halftone printing artifacts, 1990s collector edition quality.
+Strong ink outlines. Rich color palette. Dramatic lighting.
+
+The viewer should immediately wonder:
+"What happened in this person's life, and where are they going next?"
+
+Avoid AI poster aesthetics.
+Avoid floating disconnected symbols.
+Avoid generic anime protagonists with no personality.
+Avoid random unmotivated text overlays.
+Avoid cluttered or chaotic compositions.
+
+Masterpiece editorial illustration. Extremely detailed.
+Sharp focal hierarchy. Cinematic atmosphere.
+High contrast shadows. Rich emotional depth."""
 
     headers = {
         "Authorization": f"Bearer {HF_API_KEY}",
         "Content-Type": "application/json",
     }
-
-    # HF inference standard format: {"inputs": prompt, "parameters": {...}}
     payload = {
         "inputs": prompt,
         "parameters": {
             "num_inference_steps": 4,
-            "guidance_scale": 0.0,   # FLUX-schnell is guidance-distilled; 0.0 is correct
+            "guidance_scale": 0.0,
         },
     }
 
