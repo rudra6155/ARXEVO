@@ -266,91 +266,31 @@ export default function CardPage() {
     }
   };
 
-  // ─── Save card as Instagram-ready image ─────────────────────
-  const handleSaveImage = useCallback(async () => {
-    if (!cardRef.current || !profile) return;
-    const meta = getMeta(profile.archetype);
-
-    await document.fonts.ready;
-    const { default: h2c } = await import("html2canvas");
-
-    // Temporarily show watermark and capture border
-    const watermark = document.getElementById("arxevo-watermark");
-    const border = document.getElementById("arxevo-capture-border");
-    if (watermark) watermark.style.opacity = "1";
-    if (border) border.style.opacity = "1";
-
-    // ── FIX: temporarily expand the card to show ALL content ──
-    const cardEl = cardRef.current;
-    const originalHeight = cardEl.style.height;
-    const originalMinHeight = cardEl.style.minHeight;
-    const originalOverflow = cardEl.style.overflow;
-    const originalPaddingBottom = cardEl.style.paddingBottom;
-
-    cardEl.style.height = "auto";
-    cardEl.style.minHeight = "600px";
-    cardEl.style.overflow = "visible";
-    cardEl.style.paddingBottom = "60px";
-
-    // Allow reflow before measuring
-    await new Promise(resolve => requestAnimationFrame(resolve));
-    await new Promise(resolve => requestAnimationFrame(resolve));
-
-    const captureHeight = Math.max(cardEl.scrollHeight, 1350);
-
-    const canvas = await h2c(cardEl, {
-      backgroundColor: "#111109",
-      scale: 2.25,          // 480 × 2.25 = 1080px wide
-      useCORS: true,
-      logging: false,
-      height: captureHeight,
-      windowHeight: captureHeight,
-    });
-
-    // Restore original styles
-    cardEl.style.height = originalHeight;
-    cardEl.style.minHeight = originalMinHeight;
-    cardEl.style.overflow = originalOverflow;
-    cardEl.style.paddingBottom = originalPaddingBottom;
-
-    if (watermark) watermark.style.opacity = "0";
-    if (border) border.style.opacity = "0";
-
-    // Add 8px border in archetype accent color
-    const final = document.createElement("canvas");
-    final.width = canvas.width;
-    final.height = canvas.height;
-    const ctx = final.getContext("2d");
-    if (ctx) {
-      ctx.fillStyle = meta.color;
-      ctx.fillRect(0, 0, final.width, final.height);
-      const pad = Math.round(8 * 2.25);
-      ctx.drawImage(canvas, pad, pad, canvas.width - pad * 2, canvas.height - pad * 2);
+  const handleActionClick = async () => {
+    if (!profile) return;
+    if (!user) {
+      sessionStorage.setItem("pending_card", JSON.stringify({
+        archetype: profile.archetype,
+        secondary_archetype: profile.secondary_archetype,
+        origin_story: profile.origin_story,
+        traits: profile.traits,
+        confidence: profile.confidence
+      }));
+      sessionStorage.setItem("arxevo_pending_save", "true");
+      setShowAuthModal(true);
+      return;
     }
-
-    const link = document.createElement("a");
-    link.download = `arxevo-${profile.archetype}-card.png`;
-    link.href = final.toDataURL("image/png");
-    link.click();
-  }, [profile]);
-
-  const handleWhatsApp = useCallback(() => {
-    if (!profile) return;
-    const meta = getMeta(profile.archetype);
-    const text = `I just discovered my ARXEVO archetype: ${meta.label}.\n\n"${profile.origin_story.slice(0, 120)}..."\n\nDiscover yours: https://arxevo.filtree.in`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
-  }, [profile]);
-
-  const handleInstagram = useCallback(async () => {
-    await handleSaveImage();
-  }, [handleSaveImage]);
-
-  const handleTwitter = useCallback(() => {
-    if (!profile) return;
-    const meta = getMeta(profile.archetype);
-    const text = `Just discovered I'm a ${meta.label} on ARXEVO.\n\n"${profile.origin_story.slice(0, 100)}..."\n\nhttps://arxevo.filtree.in #ARXEVO`;
-    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, "_blank");
-  }, [profile]);
+    
+    // If logged in, save the card and go to profile
+    setSaveStatus("saving");
+    try {
+      await saveCard(profile);
+      router.push("/profile");
+    } catch (err) {
+      console.error(err);
+      setSaveStatus("idle");
+    }
+  };
 
   // ─── Waitlist submit ────────────────────────────────────────
   const handleWaitlistSubmit = useCallback(async (e: React.FormEvent) => {
@@ -647,11 +587,11 @@ export default function CardPage() {
         {/* Share buttons */}
         <div style={{ width: "480px", maxWidth: "100%", margin: "40px auto 0", display: "flex", gap: "12px", flexWrap: "wrap" }}>
           {[
-            { key: "save", label: saveStatus === "saved" ? "ARC SAVED." : saveStatus === "saving" ? "SAVING..." : "SAVE", fn: handleSaveClick },
-            { key: "download", label: "DOWNLOAD", fn: handleSaveImage },
-            { key: "whatsapp", label: "WHATSAPP", fn: handleWhatsApp },
-            { key: "instagram", label: "INSTAGRAM", fn: handleInstagram },
-            { key: "twitter", label: "X", fn: handleTwitter },
+            { key: "save", label: saveStatus === "saved" ? "ARC SAVED." : saveStatus === "saving" ? "SAVING..." : "SAVE", fn: handleActionClick },
+            { key: "download", label: "DOWNLOAD", fn: handleActionClick },
+            { key: "whatsapp", label: "WHATSAPP", fn: handleActionClick },
+            { key: "instagram", label: "INSTAGRAM", fn: handleActionClick },
+            { key: "twitter", label: "X", fn: handleActionClick },
           ].map(({ key, label, fn }) => (
             <button
               key={key}
