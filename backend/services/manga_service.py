@@ -1,42 +1,58 @@
 import requests
 import os
 import base64
+import time
 
 HF_API_KEY = os.getenv("HUGGINGFACE_API_KEY")
 
-# HuggingFace router endpoint — OpenAI-compatible images/generations API
-# Avoids Railway DNS issues with the legacy api-inference host
+# ─────────────────────────────────────────────────────────────────────────────
+# ENDPOINT NOTES (important — do NOT change the URL pattern):
+#
+#  router.huggingface.co/hf-inference/models/<model>
+#      ↑ correct for ALL standard HF-inference tasks (text-to-image, NLP, etc.)
+#      ↑ returns raw binary image bytes on 200, NOT JSON
+#
+#  router.huggingface.co/hf-inference/models/<model>/v1/images/generations
+#      ↑ WRONG — /v1/ paths are OpenAI-compat chat/LLM routes only
+#
+#  Request body: {"inputs": "<prompt>", "parameters": {...}}
+#      ↑ "inputs" key required — NOT "prompt", NOT "n", NOT "size"
+#      ↑ optional params go inside "parameters" dict
+# ─────────────────────────────────────────────────────────────────────────────
+
 MODEL_URL = (
     "https://router.huggingface.co/hf-inference/models/"
-    "black-forest-labs/FLUX.1-schnell/v1/images/generations"
+    "black-forest-labs/FLUX.1-schnell"
 )
 
 
-def _parse_image_response(data: dict) -> str | None:
-    """Extract a base64 data URL from an OpenAI-style images/generations response."""
-    items = data.get("data", [])
-    if not items:
+def _post_and_parse(headers: dict, payload: dict, timeout: int = 90) -> str | None:
+    """POST to HF inference endpoint and return base64 data URL, or None on failure."""
+    response = requests.post(MODEL_URL, headers=headers, json=payload, timeout=timeout)
+
+    # Log enough context to diagnose future issues
+    print(f"HF status: {response.status_code} | content-type: {response.headers.get('content-type', '?')}")
+
+    if response.status_code == 200:
+        content_type = response.headers.get("content-type", "")
+        if "image" in content_type or len(response.content) > 1000:
+            # Raw binary bytes — the expected success path
+            img_b64 = base64.b64encode(response.content).decode("utf-8")
+            ext = "png" if "png" in content_type else "jpeg"
+            return f"data:image/{ext};base64,{img_b64}"
+        else:
+            # Shouldn't happen on 200, but log it
+            print(f"HF 200 but unexpected body: {response.text[:300]}")
+            return None
+
+    elif response.status_code in (503, 429):
+        # 503 = model loading, 429 = rate-limit — both are transient
+        print(f"HF transient {response.status_code}: {response.text[:200]}")
+        return "RETRY"
+
+    else:
+        print(f"HF API error {response.status_code}: {response.text[:400]}")
         return None
-
-    item = items[0]
-
-    # Preferred: the API returned a hosted URL — fetch and convert to base64
-    image_url = item.get("url")
-    if image_url:
-        try:
-            img_response = requests.get(image_url, timeout=30)
-            if img_response.status_code == 200:
-                img_b64 = base64.b64encode(img_response.content).decode("utf-8")
-                return f"data:image/jpeg;base64,{img_b64}"
-        except Exception as e:
-            print(f"Failed to fetch image URL: {e}")
-
-    # Fallback: the API returned inline base64
-    b64_data = item.get("b64_json")
-    if b64_data:
-        return f"data:image/jpeg;base64,{b64_data}"
-
-    return None
 
 
 def generate_manga_cover(
@@ -63,87 +79,56 @@ def generate_manga_cover(
     themes = ", ".join(key_themes[:3]) if key_themes else "journey, growth, determination"
     story = origin_story[:200] if origin_story else ""
 
-    prompt = f"""1990s Japanese anime magazine cover art,
-Newtype magazine style, Marvel comics energy,
-Image Comics epic scale. Professional editorial
-illustration. Magazine cover layout with masthead
-at top reading ARXEVO.
-
-Central protagonist hero figure, 65% of frame,
-determined expression looking toward horizon,
-human and relatable with signs of struggle,
-strong dramatic pose, detailed clothing with
-realistic folds and texture.
-
-Character archetype: {archetype.upper()}
-Visual environment: {visual}
-Themes: {themes}
-Story context: {story}
-
-Past struggles depicted behind character in shadow,
-future aspirations ahead in light. Character stands
-at transition point between darkness and hope.
-
-Art style: hand-painted anime illustration,
-cel animation color treatment, real brush textures,
-printed magazine texture, slight paper grain,
-halftone printing artifacts, 1990s collector edition.
-
-Masterpiece illustration, professional editorial
-artwork, extremely detailed, sharp focal hierarchy,
-strong composition, cinematic atmosphere,
-high contrast, rich shadows.
-
-NOT generic AI art. NOT generic superhero.
-This is the official magazine cover of a
-real person's life story."""
+    prompt = (
+        f"1990s Japanese anime magazine cover art, Newtype magazine style, "
+        f"Marvel comics energy, Image Comics epic scale. Professional editorial illustration. "
+        f"Magazine cover layout with masthead at top reading ARXEVO. "
+        f"Central protagonist hero figure, 65% of frame, determined expression looking toward horizon, "
+        f"human and relatable with signs of struggle, strong dramatic pose, "
+        f"detailed clothing with realistic folds and texture. "
+        f"Character archetype: {archetype.upper()}. "
+        f"Visual environment: {visual}. "
+        f"Themes: {themes}. "
+        f"Story context: {story}. "
+        f"Past struggles depicted behind character in shadow, future aspirations ahead in light. "
+        f"Character stands at transition point between darkness and hope. "
+        f"Art style: hand-painted anime illustration, cel animation color treatment, "
+        f"real brush textures, printed magazine texture, slight paper grain, "
+        f"halftone printing artifacts, 1990s collector edition. "
+        f"Masterpiece illustration, professional editorial artwork, extremely detailed, "
+        f"sharp focal hierarchy, strong composition, cinematic atmosphere, high contrast, rich shadows."
+    )
 
     headers = {
         "Authorization": f"Bearer {HF_API_KEY}",
         "Content-Type": "application/json",
     }
+
+    # HF inference standard format: {"inputs": prompt, "parameters": {...}}
     payload = {
-        "prompt": prompt,
-        "n": 1,
-        "size": "768x1024",
+        "inputs": prompt,
+        "parameters": {
+            "num_inference_steps": 4,
+            "guidance_scale": 0.0,   # FLUX-schnell is guidance-distilled; 0.0 is correct
+        },
     }
 
     try:
-        response = requests.post(
-            MODEL_URL,
-            headers=headers,
-            json=payload,
-            timeout=60,
-        )
+        result = _post_and_parse(headers, payload, timeout=90)
 
-        if response.status_code == 200:
-            result = _parse_image_response(response.json())
-            if result:
-                return result
-            print("HF response 200 but no image data found")
+        if result == "RETRY":
+            print("HF model loading/rate-limited — waiting 25s then retrying...")
+            time.sleep(25)
+            result = _post_and_parse(headers, payload, timeout=90)
 
-        elif response.status_code == 503:
-            # Model still loading — retry once after 20 s
-            import time
-            print("HF model loading, retrying in 20 s...")
-            time.sleep(20)
-            retry = requests.post(
-                MODEL_URL,
-                headers=headers,
-                json=payload,
-                timeout=60,
-            )
-            if retry.status_code == 200:
-                result = _parse_image_response(retry.json())
-                if result:
-                    return result
-            print(f"HF retry error: {retry.status_code} — {retry.text[:200]}")
-
-        else:
-            print(f"HF API error: {response.status_code} — {response.text[:200]}")
+        if result and result != "RETRY":
+            return result
 
         return None
 
+    except requests.exceptions.Timeout:
+        print("HF request timed out after 90s")
+        return None
     except Exception as e:
         print(f"Manga generation error: {e}")
         return None
