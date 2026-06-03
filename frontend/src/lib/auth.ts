@@ -44,6 +44,8 @@ export async function saveCard(profileData: any) {
         origin_story: profileData.origin_story,
         traits: profileData.traits,
         confidence: profileData.confidence || 0,
+        key_themes: profileData.key_themes || [],
+        manga_cover: profileData.manga_cover || null,
       }
     ]);
   

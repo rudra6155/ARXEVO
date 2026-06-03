@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from routers.analyze import router as analyze_router
 from routers.upload import router as upload_router
+from routers.manga import router as manga_router
 
 app = FastAPI(title="ARXEVO API")
 
@@ -25,6 +26,7 @@ app.add_middleware(
 # --- Routers ---
 app.include_router(analyze_router)
 app.include_router(upload_router)
+app.include_router(manga_router)
 
 
 

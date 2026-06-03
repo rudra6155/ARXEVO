@@ -73,3 +73,24 @@ export async function extractTextFromFile(file: File): Promise<string> {
   const data = await res.json();
   return data.text;
 }
+
+export async function generateMangaCover(
+  archetype: string,
+  originStory: string,
+  keyThemes: string[],
+  userName: string
+): Promise<string | null> {
+  const res = await fetch(`${API_BASE_URL}/generate-manga-cover`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      archetype,
+      origin_story: originStory,
+      key_themes: keyThemes,
+      user_name: userName,
+    }),
+  });
+  if (!res.ok) return null;
+  const data = await res.json();
+  return data.manga_cover_url ?? null;
+}

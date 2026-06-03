@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { getUserCards, signOut, saveCard } from "@/lib/auth";
+import { generateMangaCover } from "@/lib/api";
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 import { User } from "@supabase/supabase-js";
@@ -61,6 +62,8 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [expandedCardId, setExpandedCardId] = useState<string | null>(null);
+  // Per-card manga state: { [cardId]: { url: string|null, loading: boolean } }
+  const [mangaState, setMangaState] = useState<Record<string, { url: string | null; loading: boolean }>>({});
   const router = useRouter();
 
   const showToast = (msg: string) => {
@@ -188,6 +191,38 @@ export default function ProfilePage() {
     const text = `Just discovered I'm a ${meta.label} on ARXEVO.\n\n"${card.origin_story.slice(0, 100)}..."\n\nhttps://arxevo.filtree.in #ARXEVO`;
     window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, "_blank");
   }, []);
+
+  async function handleGenerateManga(card: any) {
+    setMangaState(prev => ({ ...prev, [card.id]: { url: prev[card.id]?.url ?? null, loading: true } }));
+    try {
+      const url = await generateMangaCover(
+        card.archetype,
+        card.origin_story,
+        card.key_themes || [],
+        firstName
+      );
+      if (url) {
+        setMangaState(prev => ({ ...prev, [card.id]: { url, loading: false } }));
+        // Persist to Supabase
+        await supabase.from('cards').update({ manga_cover: url }).eq('id', card.id);
+        // Also refresh local cards array so it survives re-render
+        setCards(prev => prev.map(c => c.id === card.id ? { ...c, manga_cover: url } : c));
+      } else {
+        setMangaState(prev => ({ ...prev, [card.id]: { url: null, loading: false } }));
+        showToast("Cover generation failed. Try again.");
+      }
+    } catch {
+      setMangaState(prev => ({ ...prev, [card.id]: { url: null, loading: false } }));
+      showToast("Cover generation failed. Try again.");
+    }
+  }
+
+  function handleDownloadManga(url: string, archetype: string) {
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `arxevo-chapter-01-${archetype}.jpg`;
+    link.click();
+  }
 
   if (loading) {
     return (
@@ -357,6 +392,91 @@ export default function ProfilePage() {
                         ))}
                       </div>
 
+                      {/* Manga Cover Section */}
+                      {(() => {
+                        const ms = mangaState[card.id];
+                        // Resolve URL: prefer live state, fall back to DB value
+                        const mangaUrl = ms?.url ?? card.manga_cover ?? null;
+                        const mangaLoading = ms?.loading ?? false;
+
+                        return (
+                          <div style={{ width: '100%', maxWidth: '480px', marginTop: '40px' }}>
+
+                            {!mangaUrl && !mangaLoading && (
+                              <div>
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); handleGenerateManga(card); }}
+                                  style={{
+                                    width: '100%', padding: '14px',
+                                    fontFamily: "'DM Mono', monospace", fontSize: '11px',
+                                    letterSpacing: '0.15em', textTransform: 'uppercase',
+                                    color: '#b8960c', background: 'transparent',
+                                    border: '1px solid #b8960c', cursor: 'pointer',
+                                    transition: 'background 0.2s, color 0.2s', outline: 'none',
+                                  }}
+                                  onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(184,150,12,0.08)'; }}
+                                  onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+                                >
+                                  GENERATE YOUR ORIGIN COVER
+                                </button>
+                                <div style={{ fontFamily: "'DM Mono', monospace", fontSize: '9px', color: '#4a4438', marginTop: '8px', textAlign: 'center', letterSpacing: '0.08em' }}>
+                                  Free. Takes 15–30 seconds.
+                                </div>
+                              </div>
+                            )}
+
+                            {mangaLoading && (
+                              <div style={{ textAlign: 'center' }}>
+                                <div style={{ fontFamily: "'DM Mono', monospace", fontSize: '10px', color: '#8a7e6e', letterSpacing: '0.1em', marginBottom: '16px', textTransform: 'uppercase' }}>
+                                  The system is illustrating your arc...
+                                </div>
+                                <div style={{ width: '100%', height: '2px', background: '#1a1a16', overflow: 'hidden', position: 'relative' }}>
+                                  <div style={{
+                                    position: 'absolute', top: 0, left: 0, height: '100%',
+                                    background: 'linear-gradient(90deg, transparent, #b8960c, transparent)',
+                                    width: '60%',
+                                    animation: 'mangaScan 1.8s ease-in-out infinite',
+                                  }} />
+                                </div>
+                              </div>
+                            )}
+
+                            {mangaUrl && !mangaLoading && (
+                              <div>
+                                <div style={{ fontFamily: "'DM Mono', monospace", fontSize: '9px', color: '#4a4438', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '10px' }}>
+                                  YOUR ORIGIN — CHAPTER 01
+                                </div>
+                                <img
+                                  src={mangaUrl}
+                                  alt="Manga origin cover"
+                                  style={{
+                                    width: '100%', display: 'block',
+                                    filter: 'contrast(1.1)',
+                                    border: '1px solid #2a2820',
+                                  }}
+                                />
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); handleDownloadManga(mangaUrl, card.archetype); }}
+                                  style={{
+                                    width: '100%', marginTop: '12px', padding: '12px',
+                                    fontFamily: "'DM Mono', monospace", fontSize: '9px',
+                                    letterSpacing: '0.15em', textTransform: 'uppercase',
+                                    color: '#8a7e6e', background: 'transparent',
+                                    border: '1px solid #2a2820', cursor: 'pointer',
+                                    transition: 'border-color 0.2s, color 0.2s', outline: 'none',
+                                  }}
+                                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = meta.color; e.currentTarget.style.color = '#e8e0d0'; }}
+                                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#2a2820'; e.currentTarget.style.color = '#8a7e6e'; }}
+                                >
+                                  DOWNLOAD CHAPTER 01
+                                </button>
+                              </div>
+                            )}
+
+                          </div>
+                        );
+                      })()}
+
                     </div>
                   </div>
                 </div>
@@ -383,6 +503,11 @@ export default function ProfilePage() {
           15% { opacity: 1; transform: translate(-50%, 0); }
           85% { opacity: 1; transform: translate(-50%, 0); }
           100% { opacity: 0; transform: translate(-50%, -20px); }
+        }
+        @keyframes mangaScan {
+          0%   { transform: translateX(-100%); }
+          50%  { transform: translateX(200%); }
+          100% { transform: translateX(-100%); }
         }
       `}} />
     </div>
