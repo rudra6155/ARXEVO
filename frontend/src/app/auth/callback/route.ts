@@ -1,24 +1,42 @@
-import { createClient } from '@supabase/supabase-js'
+import { createServerClient } from '@supabase/ssr'
+import { cookies } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url)
   const code = requestUrl.searchParams.get('code')
-  
-  // Use environment variable for production URL
-  // Never trust requestUrl.origin in production
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL 
     || requestUrl.origin
 
   if (code) {
-    const supabase = createClient(
+    const cookieStore = await cookies()
+    const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return cookieStore.getAll()
+          },
+          setAll(cookiesToSet) {
+            try {
+              cookiesToSet.forEach(({ name, value, options }) =>
+                cookieStore.set(name, value, options)
+              )
+            } catch {}
+          },
+        },
+      }
     )
-    await supabase.auth.exchangeCodeForSession(code)
+    try {
+      await supabase.auth.exchangeCodeForSession(code)
+    } catch (err) {
+      console.error('Auth exchange error:', err)
+      return NextResponse.redirect(
+        new URL('/?error=auth_failed', siteUrl)
+      )
+    }
   }
 
-  return NextResponse.redirect(
-    new URL('/profile', siteUrl)
-  )
+  return NextResponse.redirect(new URL('/profile', siteUrl))
 }
