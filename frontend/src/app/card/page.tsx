@@ -405,7 +405,7 @@ export default function CardPage() {
       </div>
 
       {/* Nav */}
-      <nav style={{ position: "sticky", top: 0, zIndex: 100, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "20px 48px", backgroundColor: "#0a0a08", borderBottom: "1px solid #1a1a16" }}>
+      <nav className="cp-nav" style={{ position: "sticky", top: 0, zIndex: 100, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "20px 48px", backgroundColor: "#0a0a08", borderBottom: "1px solid #1a1a16" }}>
         <Link
           href="/"
           style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 600, fontSize: "16px", letterSpacing: "0.05em", color: "#e8e0d0", textDecoration: "none" }}
@@ -425,7 +425,7 @@ export default function CardPage() {
       </nav>
 
       {/* Main */}
-      <div style={{ maxWidth: "560px", margin: "0 auto", padding: "80px 24px 0", display: "flex", flexDirection: "column", alignItems: "center", gap: "0" }}>
+      <div className="cp-main" style={{ maxWidth: "560px", margin: "0 auto", padding: "80px 24px 0", display: "flex", flexDirection: "column", alignItems: "center", gap: "0" }}>
 
         {/* Card wrap — GSAP target */}
         <div
@@ -435,6 +435,7 @@ export default function CardPage() {
           {/* THE CARD — height: auto so origin story never clips */}
           <div
             ref={cardRef}
+            data-card-container
             style={{
               width: "480px",
               height: "auto",
@@ -585,7 +586,7 @@ export default function CardPage() {
         )}
 
         {/* Share buttons */}
-        <div style={{ width: "480px", maxWidth: "100%", margin: "40px auto 0", display: "flex", gap: "12px", flexWrap: "wrap" }}>
+        <div className="cp-share" style={{ width: "480px", maxWidth: "100%", margin: "40px auto 0", display: "flex", gap: "12px", flexWrap: "wrap" }}>
           {[
             { key: "save", label: saveStatus === "saved" ? "ARC SAVED." : saveStatus === "saving" ? "SAVING..." : "SAVE", fn: handleActionClick },
             { key: "download", label: "DOWNLOAD", fn: handleActionClick },
@@ -799,11 +800,15 @@ export default function CardPage() {
 
       {/* Mobile responsive styles */}
       <style dangerouslySetInnerHTML={{ __html: `
-        @media (max-width: 480px) {
+        @media (max-width: 768px) {
+          .cp-nav { padding: 16px 16px !important; }
+          .cp-main { padding: 40px 16px 0 !important; }
           [data-card-container] {
             width: 100% !important;
             max-width: 100% !important;
           }
+          .cp-share { flex-direction: column !important; width: 100% !important; }
+          .share-btn { width: 100% !important; cursor: pointer !important; }
         }
         @keyframes fadeInOut {
           0% { opacity: 0; transform: translate(-50%, 20px); }

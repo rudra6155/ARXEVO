@@ -103,6 +103,7 @@ function ShardsBackground({ accentColor, accentRgb }: { accentColor: string; acc
       {SHARD_SHAPES.map((s, i) => (
         <div
           key={i}
+          className="shard-shape"
           style={{
             position: "absolute",
             top: s.top, left: s.left,
@@ -344,7 +345,7 @@ export default function ProfilePage() {
             ARC
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr auto", alignItems: "flex-start", gap: "32px", position: "relative", zIndex: 1, paddingTop: "20px" }}>
+          <div className="profile-header-grid" style={{ display: "grid", gridTemplateColumns: "1fr auto", alignItems: "flex-start", gap: "32px", position: "relative", zIndex: 1, paddingTop: "20px" }}>
             {/* Left: title block */}
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "20px" }}>
@@ -399,6 +400,7 @@ export default function ProfilePage() {
 
             {/* Disconnect */}
             <button
+              className="disconnect-btn"
               onClick={async () => { await signOut(); router.push("/"); }}
               style={{
                 position: "absolute", top: "20px", right: 0,
@@ -556,7 +558,7 @@ export default function ProfilePage() {
                     <div style={{ paddingBottom: "56px" }}>
 
                       {/* ── Two-column main content ──────────────────── */}
-                      <div style={{
+                      <div className="profile-content-grid" style={{
                         display: "grid",
                         gridTemplateColumns: "minmax(0,480px) 1fr",
                         gap: "48px",
@@ -752,7 +754,7 @@ export default function ProfilePage() {
 
                         {/* Manga image + share buttons */}
                         {mangaUrl && !mangaLoading && (
-                          <div style={{ display: "grid", gridTemplateColumns: "minmax(0,480px) 1fr", gap: "32px", alignItems: "start" }}>
+                          <div className="profile-manga-grid" style={{ display: "grid", gridTemplateColumns: "minmax(0,480px) 1fr", gap: "32px", alignItems: "start" }}>
                             {/* Image with parallelogram clip + glow */}
                             <div>
                               <div style={{
@@ -902,7 +904,11 @@ export default function ProfilePage() {
           50%     { transform: translateY(-10px) rotate(-4deg) scale(1.03); }
         }
         @media (max-width: 768px) {
-          /* Stack two-column layouts on mobile */
+          .shard-shape { display: none !important; }
+          .profile-header-grid { grid-template-columns: 1fr !important; gap: 16px !important; }
+          .profile-content-grid { grid-template-columns: 1fr !important; gap: 32px !important; }
+          .profile-manga-grid { grid-template-columns: 1fr !important; gap: 24px !important; }
+          .disconnect-btn { position: relative !important; top: 0 !important; margin-top: 16px !important; align-self: flex-start !important; }
         }
       `}} />
     </div>

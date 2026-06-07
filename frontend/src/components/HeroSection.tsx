@@ -124,6 +124,7 @@ export default function HeroSection() {
     if (!ctx) return;
 
     const particleCount = isMobile ? 30 : 80;
+    const connectionDist = isMobile ? 80 : CONNECTION_DIST;
     let width = window.innerWidth;
     let height = window.innerHeight;
     canvas.width = width;
@@ -192,12 +193,12 @@ export default function HeroSection() {
           const dx = a.x - b.x;
           const dy = a.y - b.y;
           const d = Math.sqrt(dx * dx + dy * dy);
-          if (d < CONNECTION_DIST) {
+          if (d < connectionDist) {
             ctx.beginPath();
             ctx.moveTo(a.x, a.y);
             ctx.lineTo(b.x, b.y);
             ctx.strokeStyle = a.color;
-            ctx.globalAlpha = (1 - d / CONNECTION_DIST) * 0.25;
+            ctx.globalAlpha = (1 - d / connectionDist) * 0.25;
             ctx.lineWidth = 0.6;
             ctx.stroke();
             ctx.globalAlpha = 1;

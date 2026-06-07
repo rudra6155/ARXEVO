@@ -58,7 +58,7 @@ function ArchetypeSymbol({ archetype, color, size = 24 }: { archetype: string; c
 
 function TraitBar({ label, value, color, delay, triggered }: { label: string; value: number; color: string; delay: number; triggered: boolean }) {
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "100px 1fr 30px", gap: "12px", alignItems: "center", marginBottom: "8px" }}>
+    <div className="cc-trait-row" style={{ display: "grid", gridTemplateColumns: "100px 1fr 30px", gap: "12px", alignItems: "center", marginBottom: "8px" }}>
       <span style={{ fontFamily: "'DM Mono', monospace", fontSize: "10px", color: "#8a7e6e", textTransform: "uppercase" }}>
         {label}
       </span>
@@ -103,7 +103,16 @@ export default function CharacterCard({
   const traitsArray = Object.entries(traits || {}).sort((a, b) => b[1] - a[1]);
 
   return (
+    <>
+      <style>{`
+        @media (max-width: 768px) {
+          .cc-container { width: 100% !important; max-width: 100% !important; }
+          .cc-trait-row { grid-template-columns: 80px 1fr 30px !important; }
+          .cc-title { font-size: clamp(36px, 10vw, 42px) !important; }
+        }
+      `}</style>
     <div
+      className="cc-container"
       style={{
         width: "480px",
         height: "auto",
@@ -135,6 +144,7 @@ export default function CharacterCard({
         </div>
 
         <h1
+          className="cc-title"
           style={{
             fontFamily: "var(--font-cormorant)",
             fontWeight: 700,
@@ -198,5 +208,6 @@ export default function CharacterCard({
         </div>
       </div>
     </div>
+    </>
   );
 }

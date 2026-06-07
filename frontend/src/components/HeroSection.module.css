@@ -448,5 +448,27 @@
   .btnPrimary,
   .btnGhost {
     cursor: pointer;
+    width: 100%;
+  }
+  .h1 {
+    font-size: clamp(36px, 12vw, 52px);
+  }
+  .subtext {
+    font-size: 15px;
+  }
+  .buttonRow {
+    flex-direction: column;
+    width: 100%;
+  }
+  .marqueeItem {
+    font-size: 9px;
+    padding: 0 24px;
+  }
+  .scrollIndicator {
+    display: none;
+  }
+  .radialGlow {
+    width: 300px;
+    height: 300px;
   }
 }

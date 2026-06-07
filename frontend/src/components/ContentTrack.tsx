@@ -71,6 +71,7 @@ export default function ContentTrack() {
   const containerRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const [isDecrypted, setIsDecrypted] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const panel3Ref = useRef<HTMLDivElement>(null);
   const bloodSplashRef = useRef<SVGCircleElement>(null);
   const bloodTriggeredRef = useRef(false);
@@ -81,6 +82,15 @@ export default function ContentTrack() {
   const headline4Ref = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
+    if (isMobile) return;
+    
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const container = containerRef.current;
     const track = trackRef.current;
@@ -161,26 +171,44 @@ export default function ContentTrack() {
     return () => {
       ownTriggers.forEach((t) => t.kill());
     };
-  }, []);
+  }, [isMobile]);
 
   return (
+    <>
+      <style>{`
+        @media (max-width: 768px) {
+          .ct-container { height: auto !important; overflow: visible !important; }
+          .ct-track { flex-direction: column !important; width: 100% !important; height: auto !important; }
+          .ct-panel { width: 100% !important; min-height: 100vh !important; padding: 40px 20px !important; }
+          .ct-panel-1-inner { flex-direction: column !important; gap: 40px !important; padding-top: 20px !important; }
+          .ct-archetype-grid { flex-direction: column !important; gap: 16px !important; }
+          .ct-ghost-num { font-size: 15vw !important; top: 2vh !important; right: 2vw !important; }
+          .ct-shard-container { min-height: 280px !important; }
+          .ct-shard-reveal { padding: 24px !important; }
+          .ct-shard-reveal p { font-size: 14px !important; margin-bottom: 16px !important; }
+          .ct-shard-label { font-size: 11px !important; }
+          .ct-headline { font-size: clamp(32px, 8vw, 48px) !important; max-width: 100% !important; }
+          .ct-steps-container { max-width: 100% !important; }
+        }
+      `}</style>
     <div
       ref={containerRef}
-      className="h-screen w-full overflow-hidden"
+      className="h-screen w-full overflow-hidden ct-container"
       style={{ backgroundColor: "#0a0a08" }}
     >
-      <div ref={trackRef} className="flex h-full" style={{ width: "500vw" }}>
+      <div ref={trackRef} className="flex h-full ct-track" style={{ width: isMobile ? "100%" : "500vw" }}>
 
         {/* ════════════════════════════════════════════════════════
             PANEL 0 — ORIGIN
             ════════════════════════════════════════════════════════ */}
         <div
-          className="h-full w-screen flex items-center relative"
+          className="h-full w-screen flex items-center relative ct-panel"
           id="panel-0"
           style={{ backgroundColor: "#0a0a08" }}
         >
           {/* Ghost number */}
           <span
+            className="ct-ghost-num"
             style={{
               position: "absolute",
               top: "5vh",
@@ -201,6 +229,7 @@ export default function ContentTrack() {
           <div className="relative z-10 px-[8vw] flex flex-col justify-center h-full w-full">
             <h1
               ref={headline0Ref}
+              className="ct-headline"
               style={{
                 fontFamily: "var(--font-cormorant)",
                 fontWeight: 600,
@@ -220,12 +249,13 @@ export default function ContentTrack() {
             PANEL 1 — ARCHETYPES
             ════════════════════════════════════════════════════════ */}
         <div
-          className="h-full w-screen flex flex-col justify-center relative"
+          className="h-full w-screen flex flex-col justify-center relative ct-panel"
           id="panel-1"
           style={{ backgroundColor: "#0a0a08", padding: "0 6vw" }}
         >
           {/* Ghost number */}
           <span
+            className="ct-ghost-num"
             style={{
               position: "absolute",
               top: "5vh",
@@ -241,9 +271,9 @@ export default function ContentTrack() {
           >
             02
           </span>
-          <div className="flex w-full justify-between items-center mb-12 gap-16 relative z-10 pt-[5vh] px-[4vw]">
+          <div className="flex w-full justify-between items-center mb-12 gap-16 relative z-10 pt-[5vh] px-[4vw] ct-panel-1-inner">
             {/* The Award-Winning Interactive Glass Shard */}
-            <div className="flex-1 relative" style={{ perspective: "1500px", minHeight: "340px" }}>
+            <div className="flex-1 relative ct-shard-container" style={{ perspective: "1500px", minHeight: "340px", width: "100%" }}>
               <div 
                 className="w-full h-full cursor-pointer absolute inset-0 group"
                 style={{ transformStyle: "preserve-3d" }}
@@ -270,7 +300,7 @@ export default function ContentTrack() {
                     pointerEvents: isDecrypted ? "none" : "auto",
                   }}
                 >
-                  <span style={{ 
+                  <span className="ct-shard-label" style={{ 
                     fontFamily: "var(--font-dm-mono)", 
                     fontSize: "14px", 
                     letterSpacing: "6px", 
@@ -279,13 +309,13 @@ export default function ContentTrack() {
                     textShadow: "0 0 10px rgba(184, 150, 12, 0.8)",
                     padding: "20px"
                   }}>
-                    [ HOVER TO DECRYPT ]
+                    {isMobile ? "[ TAP TO DECRYPT ]" : "[ HOVER TO DECRYPT ]"}
                   </span>
                 </div>
 
                 {/* THE REVEAL (Back) */}
                 <div 
-                  className="absolute inset-0 transition-all duration-[800ms] ease-[cubic-bezier(0.25,1,0.5,1)] flex flex-col justify-center"
+                  className="absolute inset-0 transition-all duration-[800ms] ease-[cubic-bezier(0.25,1,0.5,1)] flex flex-col justify-center ct-shard-reveal"
                   style={{
                     background: "rgba(10, 10, 8, 0.85)",
                     backdropFilter: "blur(24px)",
@@ -333,6 +363,7 @@ export default function ContentTrack() {
             <div className="flex-1 flex flex-col justify-center">
               <h2
                 ref={headline1Ref}
+                className="ct-headline"
                 style={{
                   fontFamily: "var(--font-cormorant)",
                   fontWeight: 600,
@@ -362,7 +393,7 @@ export default function ContentTrack() {
           </div>
 
           {/* 4-column grid */}
-          <div className="relative z-10 flex gap-6 px-4 w-full mx-auto" style={{ maxWidth: "1200px" }}>
+          <div className="relative z-10 flex gap-6 px-4 w-full mx-auto ct-archetype-grid" style={{ maxWidth: "1200px" }}>
             {ARCHETYPES.map((arch, i) => (
               <div
                 key={i}
@@ -438,12 +469,13 @@ export default function ContentTrack() {
             PANEL 2 — PROTOCOL
             ════════════════════════════════════════════════════════ */}
         <div
-          className="h-full w-screen flex flex-col justify-center relative"
+          className="h-full w-screen flex flex-col justify-center relative ct-panel"
           id="panel-2"
           style={{ backgroundColor: "#0a0a08", padding: "0 8vw" }}
         >
           {/* Ghost number */}
           <span
+            className="ct-ghost-num"
             style={{
               position: "absolute",
               top: "5vh",
@@ -463,6 +495,7 @@ export default function ContentTrack() {
           <div className="relative z-10">
             <h2
               ref={headline2Ref}
+              className="ct-headline"
               style={{
                 fontFamily: "var(--font-cormorant)",
                 fontWeight: 400,
@@ -476,7 +509,7 @@ export default function ContentTrack() {
               Four steps. One squad.
             </h2>
 
-            <div className="space-y-10" style={{ maxWidth: "640px" }}>
+            <div className="space-y-10 ct-steps-container" style={{ maxWidth: "640px" }}>
               {STEPS.map((step, i) => (
                 <div key={i} className="flex gap-8">
                   <span
@@ -528,7 +561,7 @@ export default function ContentTrack() {
             ════════════════════════════════════════════════════════ */}
         <div
           ref={panel3Ref}
-          className="h-full w-screen relative flex flex-col items-center justify-center overflow-hidden"
+          className="h-full w-screen relative flex flex-col items-center justify-center overflow-hidden ct-panel"
           id="panel-3"
           style={{ backgroundColor: "#0a0a08" }}
         >
@@ -546,6 +579,7 @@ export default function ContentTrack() {
 
           {/* Ghost number */}
           <span
+            className="ct-ghost-num"
             style={{
               position: "absolute",
               top: "5vh",
@@ -565,6 +599,7 @@ export default function ContentTrack() {
           <div className="relative z-10 px-[8vw]" style={{ maxWidth: "720px" }}>
             <h2
               ref={headline3Ref}
+              className="ct-headline"
               style={{
                 fontFamily: "var(--font-cormorant)",
                 fontWeight: 400,
@@ -672,12 +707,13 @@ export default function ContentTrack() {
             PANEL 4 — INITIATE
             ════════════════════════════════════════════════════════ */}
         <div
-          className="h-full w-screen flex flex-col items-center justify-center relative"
+          className="h-full w-screen flex flex-col items-center justify-center relative ct-panel"
           id="panel-4"
           style={{ backgroundColor: "#0a0a08" }}
         >
           {/* Ghost number */}
           <span
+            className="ct-ghost-num"
             style={{
               position: "absolute",
               top: "5vh",
@@ -696,6 +732,7 @@ export default function ContentTrack() {
 
           <h2
             ref={headline4Ref}
+            className="ct-headline"
             style={{
               fontFamily: "var(--font-cormorant)",
               fontWeight: 400,
@@ -753,5 +790,6 @@ export default function ContentTrack() {
 
       </div>
     </div>
+    </>
   );
 }

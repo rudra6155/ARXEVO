@@ -4,7 +4,19 @@ import Link from "next/link";
 
 export default function Footer() {
   return (
+    <>
+      <style>{`
+        @media (max-width: 768px) {
+          .footer-container {
+            flex-direction: column !important;
+            padding: 24px 20px !important;
+            gap: 12px !important;
+            text-align: center !important;
+          }
+        }
+      `}</style>
     <footer
+      className="footer-container"
       style={{
         borderTop: "1px solid #1a1a16",
         padding: "32px 60px",
@@ -80,5 +92,6 @@ export default function Footer() {
         © {new Date().getFullYear()} ARXEVO
       </span>
     </footer>
+    </>
   );
 }

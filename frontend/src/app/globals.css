@@ -82,8 +82,16 @@ body {
 
 /* Restore cursor on mobile */
 @media (max-width: 768px) {
-  body {
-    cursor: auto;
+  body,
+  *,
+  [style*="cursor: none"],
+  [style*="cursor:none"] {
+    cursor: auto !important;
+  }
+
+  /* Touch optimizations */
+  button, a, input, select, textarea, [role="button"], [onClick] {
+    touch-action: manipulation;
   }
 
   /* Cormorant Garamond minimum 16px on mobile for legibility */

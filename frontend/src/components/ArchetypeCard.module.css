@@ -308,6 +308,12 @@
   }
   .cardGrid {
     gap: 20px;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .card {
+    width: 100%;
+    min-height: 340px;
   }
   .shareBtn {
     cursor: pointer;

@@ -501,9 +501,9 @@ export default function Onboard() {
         const started = agentProgress[i] === 1;
         const done = agentDone[i];
         return (
-          <div key={agent.label} style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <div key={agent.label} className="agent-row" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
             {/* Agent label */}
-            <span style={{
+            <span className="agent-label" style={{
               fontFamily: "'DM Mono', monospace",
               fontSize: "11px",
               color: done ? "#b8960c" : started ? "#e8e0d0" : "#4a4438",
@@ -530,7 +530,7 @@ export default function Onboard() {
             </div>
 
             {/* Description + checkmark */}
-            <span style={{
+            <span className="agent-desc" style={{
               fontFamily: "'DM Mono', monospace",
               fontSize: "11px",
               color: done ? "#b8960c" : started ? "#8a7e6e" : "#4a4438",
@@ -786,6 +786,11 @@ export default function Onboard() {
             width: 100% !important;
             font-size: 16px !important;
           }
+        }
+        @media (max-width: 480px) {
+          .agent-row { gap: 6px !important; }
+          .agent-label { width: 50px !important; font-size: 9px !important; }
+          .agent-desc { width: 120px !important; font-size: 9px !important; }
         }
       `}} />
     </div>
