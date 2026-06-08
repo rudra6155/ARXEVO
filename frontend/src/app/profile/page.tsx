@@ -392,7 +392,7 @@ export default function ProfilePage() {
                 <div style={{ fontFamily: "'DM Mono', monospace", fontSize: "8px", color: "#4a4438", letterSpacing: "0.15em", marginTop: "6px" }}>
                   CONFIDENCE {recentCard.confidence || 0}%
                 </div>
-                <div style={{ fontFamily: "'DM Mono', monospace", fontSize: "7px", color: "#2a2820", letterSpacing: "0.1em", marginTop: "4px" }}>
+                <div style={{ fontFamily: "'DM Mono', monospace", fontSize: "7px", color: "#3a3228", letterSpacing: "0.1em", marginTop: "4px" }}>
                   INITIATED {new Date(recentCard.created_at).toLocaleDateString("en-US", { year: "numeric", month: "short" }).toUpperCase()}
                 </div>
               </div>
@@ -405,7 +405,7 @@ export default function ProfilePage() {
               style={{
                 position: "absolute", top: "20px", right: 0,
                 fontFamily: "'DM Mono', monospace", fontSize: "8px", letterSpacing: "0.15em",
-                color: "#2a2820", background: "none", border: "none", cursor: "pointer",
+                color: "#4a4438", background: "none", border: "none", cursor: "pointer",
                 transition: "color 0.2s", textTransform: "uppercase", padding: "4px 0",
               }}
               onMouseEnter={e => { e.currentTarget.style.color = "#c41e1e"; }}
@@ -419,7 +419,7 @@ export default function ProfilePage() {
           <div style={{ overflow: "hidden", marginTop: "32px", borderTop: "1px solid #1a1a16", paddingTop: "12px" }}>
             <div style={{ display: "flex", animation: "marqueeScroll 28s linear infinite", whiteSpace: "nowrap" }}>
               {Array.from({ length: 6 }).map((_, i) => (
-                <span key={i} style={{ fontFamily: "'DM Mono', monospace", fontSize: "8px", letterSpacing: "0.2em", color: "#2a2820", paddingRight: "60px", flexShrink: 0, textTransform: "uppercase" }}>
+                <span key={i} style={{ fontFamily: "'DM Mono', monospace", fontSize: "8px", letterSpacing: "0.2em", color: "#3a3228", paddingRight: "60px", flexShrink: 0, textTransform: "uppercase" }}>
                   ◈ SYSTEM ARCHIVES ◈ ARXEVO VAULT ◈ {cards.length} RECORD{cards.length !== 1 ? "S" : ""} ◈ ARC INITIALIZED ◈
                 </span>
               ))}
@@ -480,7 +480,7 @@ export default function ProfilePage() {
                     {/* Ghost number */}
                     <div style={{
                       fontFamily: "var(--font-cormorant)", fontWeight: 700, fontStyle: "italic",
-                      fontSize: "72px", color: isExpanded ? meta.color : "#1a1a16",
+                      fontSize: "72px", color: isExpanded ? meta.color : "#2a2820",
                       lineHeight: 1, userSelect: "none", transition: "color 0.5s ease",
                       opacity: isExpanded ? 0.4 : 0.6,
                     }}>
@@ -496,7 +496,7 @@ export default function ProfilePage() {
                       <h3 style={{
                         fontFamily: "var(--font-cormorant)", fontWeight: 600,
                         fontSize: "clamp(28px, 4vw, 48px)",
-                        color: isExpanded ? "#e8e0d0" : "#3a3630",
+                        color: isExpanded ? "#e8e0d0" : "#6a5a48",
                         margin: 0, textTransform: "uppercase",
                         transition: "color 0.4s ease", letterSpacing: "0.05em",
                       }}>
@@ -518,13 +518,13 @@ export default function ProfilePage() {
                     <div style={{
                       fontFamily: "'DM Mono', monospace", fontSize: "8px",
                       letterSpacing: "0.15em", textTransform: "uppercase",
-                      color: isExpanded ? meta.color : "#2a2820",
+                      color: isExpanded ? meta.color : "#4a4438",
                       transition: "color 0.3s ease",
                       display: "flex", alignItems: "center", gap: "8px",
                     }}>
                       <div style={{
                         width: "8px", height: "8px",
-                        border: `1px solid ${isExpanded ? meta.color : "#2a2820"}`,
+                        border: `1px solid ${isExpanded ? meta.color : "#3a3228"}`,
                         position: "relative", transition: "border-color 0.3s ease",
                       }}>
                         <div style={{
@@ -567,7 +567,7 @@ export default function ProfilePage() {
                       }}>
                         {/* Left: Character Card */}
                         <div>
-                          <div style={{ fontFamily: "'DM Mono', monospace", fontSize: "8px", letterSpacing: "0.2em", color: "#2a2820", textTransform: "uppercase", marginBottom: "16px" }}>
+                          <div style={{ fontFamily: "'DM Mono', monospace", fontSize: "8px", letterSpacing: "0.2em", color: "#4a4438", textTransform: "uppercase", marginBottom: "16px" }}>
                             ◈ CHARACTER CARD
                           </div>
                           <div id={`card-capture-${card.id}`}>
@@ -583,7 +583,7 @@ export default function ProfilePage() {
 
                           {/* Card share buttons */}
                           <div style={{ marginTop: "20px" }}>
-                            <div style={{ fontFamily: "'DM Mono', monospace", fontSize: "8px", letterSpacing: "0.2em", color: "#2a2820", textTransform: "uppercase", marginBottom: "12px" }}>
+                            <div style={{ fontFamily: "'DM Mono', monospace", fontSize: "8px", letterSpacing: "0.2em", color: "#4a4438", textTransform: "uppercase", marginBottom: "12px" }}>
                               ◈ SHARE CARD
                             </div>
                             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
@@ -596,8 +596,8 @@ export default function ProfilePage() {
                                 <button key={key} onClick={e => { e.stopPropagation(); fn(); }}
                                   style={{
                                     fontFamily: "'DM Mono', monospace", fontSize: "8px", letterSpacing: "0.12em",
-                                    color: "#4a4438", background: "transparent",
-                                    border: "1px solid #1a1a16", padding: "10px 12px",
+                                    color: "#6a5a48", background: "transparent",
+                                    border: "1px solid #2a2820", padding: "10px 12px",
                                     cursor: "pointer", transition: "all 0.25s ease", outline: "none",
                                     display: "flex", alignItems: "center", gap: "8px",
                                     textTransform: "uppercase",
@@ -622,10 +622,10 @@ export default function ProfilePage() {
                         {/* Right: Editorial content */}
                         <div>
                           {/* Origin story as editorial quote */}
-                          <div style={{ fontFamily: "'DM Mono', monospace", fontSize: "8px", letterSpacing: "0.2em", color: "#2a2820", textTransform: "uppercase", marginBottom: "20px" }}>
+                          <div style={{ fontFamily: "'DM Mono', monospace", fontSize: "8px", letterSpacing: "0.2em", color: "#4a4438", textTransform: "uppercase", marginBottom: "20px" }}>
                             ◈ ORIGIN TRANSMISSION
                           </div>
-                          <div style={{ position: "relative", padding: "0 0 0 24px", borderLeft: `2px solid ${meta.color}30`, marginBottom: "32px" }}>
+                          <div style={{ position: "relative", padding: "0 0 0 24px", borderLeft: `2px solid ${meta.color}60`, marginBottom: "32px" }}>
                             <div style={{
                               fontFamily: "var(--font-cormorant)", fontStyle: "italic",
                               fontSize: "clamp(20px, 2.5vw, 28px)", color: "#e8e0d0",
@@ -640,7 +640,7 @@ export default function ProfilePage() {
                           {/* Key themes */}
                           {card.key_themes && card.key_themes.length > 0 && (
                             <div style={{ marginBottom: "32px" }}>
-                              <div style={{ fontFamily: "'DM Mono', monospace", fontSize: "8px", letterSpacing: "0.2em", color: "#2a2820", textTransform: "uppercase", marginBottom: "12px" }}>
+                              <div style={{ fontFamily: "'DM Mono', monospace", fontSize: "8px", letterSpacing: "0.2em", color: "#4a4438", textTransform: "uppercase", marginBottom: "12px" }}>
                                 ◈ KEY THEMES
                               </div>
                               <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
@@ -662,7 +662,7 @@ export default function ProfilePage() {
 
                           {/* Confidence meter */}
                           <div>
-                            <div style={{ fontFamily: "'DM Mono', monospace", fontSize: "8px", letterSpacing: "0.2em", color: "#2a2820", textTransform: "uppercase", marginBottom: "10px" }}>
+                            <div style={{ fontFamily: "'DM Mono', monospace", fontSize: "8px", letterSpacing: "0.2em", color: "#4a4438", textTransform: "uppercase", marginBottom: "10px" }}>
                               ◈ ARCHETYPE CONFIDENCE
                             </div>
                             <div style={{ position: "relative", height: "2px", background: "#1a1a16", marginBottom: "6px" }}>
@@ -674,7 +674,7 @@ export default function ProfilePage() {
                                 boxShadow: `0 0 6px rgba(${meta.rgb},0.5)`,
                               }} />
                             </div>
-                            <div style={{ fontFamily: "'DM Mono', monospace", fontSize: "8px", color: "#4a4438", letterSpacing: "0.1em" }}>
+                            <div style={{ fontFamily: "'DM Mono', monospace", fontSize: "8px", color: "#6a5a48", letterSpacing: "0.1em" }}>
                               {card.confidence || 0}% — {card.confidence >= 85 ? "DEFINITIVE" : card.confidence >= 70 ? "STRONG MATCH" : "EMERGING"}
                             </div>
                           </div>
@@ -689,11 +689,11 @@ export default function ProfilePage() {
                       }}>
                         {/* Section header */}
                         <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "24px" }}>
-                          <div style={{ fontFamily: "'DM Mono', monospace", fontSize: "8px", letterSpacing: "0.2em", color: "#2a2820", textTransform: "uppercase" }}>
+                          <div style={{ fontFamily: "'DM Mono', monospace", fontSize: "8px", letterSpacing: "0.2em", color: "#4a4438", textTransform: "uppercase" }}>
                             ◈ CHAPTER 01
                           </div>
                           <div style={{ flex: 1, height: "1px", background: `linear-gradient(90deg, rgba(${meta.rgb},0.2), transparent)` }} />
-                          <div style={{ fontFamily: "'DM Mono', monospace", fontSize: "7px", color: "#2a2820", letterSpacing: "0.1em" }}>
+                          <div style={{ fontFamily: "'DM Mono', monospace", fontSize: "7px", color: "#4a4438", letterSpacing: "0.1em" }}>
                             ORIGIN COVER — COLLECTOR&apos;S EDITION
                           </div>
                         </div>
@@ -723,7 +723,7 @@ export default function ProfilePage() {
                             >
                               ◈ GENERATE YOUR ORIGIN COVER
                             </button>
-                            <div style={{ fontFamily: "'DM Mono', monospace", fontSize: "8px", color: "#2a2820", marginTop: "8px", textAlign: "center", letterSpacing: "0.08em" }}>
+                            <div style={{ fontFamily: "'DM Mono', monospace", fontSize: "8px", color: "#4a4438", marginTop: "8px", textAlign: "center", letterSpacing: "0.08em" }}>
                               Free · 15–30 seconds · Collector&apos;s edition quality
                             </div>
                           </div>
@@ -746,7 +746,7 @@ export default function ProfilePage() {
                                 }} />
                               </div>
                             ))}
-                            <div style={{ fontFamily: "'DM Mono', monospace", fontSize: "8px", color: "#2a2820", letterSpacing: "0.1em" }}>
+                            <div style={{ fontFamily: "'DM Mono', monospace", fontSize: "8px", color: "#4a4438", letterSpacing: "0.1em" }}>
                               The system is writing your legend.
                             </div>
                           </div>
@@ -780,7 +780,7 @@ export default function ProfilePage() {
 
                             {/* Right: share actions */}
                             <div>
-                              <div style={{ fontFamily: "'DM Mono', monospace", fontSize: "8px", letterSpacing: "0.2em", color: "#2a2820", textTransform: "uppercase", marginBottom: "16px" }}>
+                              <div style={{ fontFamily: "'DM Mono', monospace", fontSize: "8px", letterSpacing: "0.2em", color: "#4a4438", textTransform: "uppercase", marginBottom: "16px" }}>
                                 ◈ SHARE YOUR COVER
                               </div>
                               <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
@@ -793,8 +793,8 @@ export default function ProfilePage() {
                                   <button key={key} onClick={e => { e.stopPropagation(); fn(); }}
                                     style={{
                                       fontFamily: "'DM Mono', monospace", fontSize: "9px", letterSpacing: "0.12em",
-                                      color: "#4a4438", background: "transparent",
-                                      border: "1px solid #1a1a16", padding: "12px 16px",
+                                      color: "#6a5a48", background: "transparent",
+                                      border: "1px solid #2a2820", padding: "12px 16px",
                                       cursor: "pointer", transition: "all 0.25s ease", outline: "none",
                                       display: "grid", gridTemplateColumns: "16px 1fr auto",
                                       alignItems: "center", gap: "10px",
@@ -822,17 +822,18 @@ export default function ProfilePage() {
                                 onClick={e => {
                                   e.stopPropagation();
                                   setMangaState(prev => ({ ...prev, [card.id]: { url: null, loading: false } }));
+                                  setCards(prev => prev.map(c => c.id === card.id ? { ...c, manga_cover: null } : c));
                                 }}
                                 style={{
                                   marginTop: "16px", width: "100%", padding: "10px",
                                   fontFamily: "'DM Mono', monospace", fontSize: "8px",
-                                  letterSpacing: "0.1em", color: "#2a2820", background: "transparent",
-                                  border: "1px solid #1a1a16", cursor: "pointer",
+                                  letterSpacing: "0.1em", color: "#4a4438", background: "transparent",
+                                  border: "1px solid #2a2820", cursor: "pointer",
                                   transition: "color 0.2s, border-color 0.2s", outline: "none",
                                   textTransform: "uppercase",
                                 }}
-                                onMouseEnter={e => { e.currentTarget.style.color = "#4a4438"; e.currentTarget.style.borderColor = "#2a2820"; }}
-                                onMouseLeave={e => { e.currentTarget.style.color = "#2a2820"; e.currentTarget.style.borderColor = "#1a1a16"; }}
+                                onMouseEnter={e => { e.currentTarget.style.color = "#6a5a48"; e.currentTarget.style.borderColor = "#2a2820"; }}
+                                onMouseLeave={e => { e.currentTarget.style.color = "#4a4438"; e.currentTarget.style.borderColor = "#2a2820"; }}
                               >
                                 ↺ REGENERATE
                               </button>
@@ -852,18 +853,18 @@ export default function ProfilePage() {
         {/* ── FOOTER ─────────────────────────────────────────────────────── */}
         <div style={{ marginTop: "100px", paddingTop: "40px", borderTop: "1px solid #1a1a16", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "16px" }}>
           <Link href="/onboard" style={{
-            fontFamily: "'DM Mono', monospace", fontSize: "9px", color: "#2a2820",
+            fontFamily: "'DM Mono', monospace", fontSize: "9px", color: "#4a4438",
             textDecoration: "none", letterSpacing: "0.15em", textTransform: "uppercase",
             transition: "color 0.2s",
           }}
             onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = accentMeta.color; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = "#2a2820"; }}>
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = "#4a4438"; }}>
             ◈ Submit a new essay
           </Link>
-          <span style={{ fontFamily: "var(--font-cormorant)", fontStyle: "italic", fontSize: "18px", color: "#1a1a16", letterSpacing: "0.1em" }}>
+          <span style={{ fontFamily: "var(--font-cormorant)", fontStyle: "italic", fontSize: "18px", color: "#2a2820", letterSpacing: "0.1em" }}>
             ARXEVO
           </span>
-          <span style={{ fontFamily: "'DM Mono', monospace", fontSize: "7px", color: "#1a1a16", letterSpacing: "0.1em" }}>
+          <span style={{ fontFamily: "'DM Mono', monospace", fontSize: "7px", color: "#2a2820", letterSpacing: "0.1em" }}>
             SYSTEM ARCHIVES v1.0
           </span>
         </div>
