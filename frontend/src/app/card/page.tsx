@@ -145,6 +145,7 @@ export default function CardPage() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [showMangaHint, setShowMangaHint] = useState(false);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -224,6 +225,14 @@ export default function CardPage() {
 
     return () => { tl.kill(); };
   }, [phase, profile]);
+
+  // ─── Manga hint pointer ─────────────────────────────────────────
+  useEffect(() => {
+    if (phase !== "done") return;
+    const show = setTimeout(() => setShowMangaHint(true), 600);
+    const hide = setTimeout(() => setShowMangaHint(false), 8600);
+    return () => { clearTimeout(show); clearTimeout(hide); };
+  }, [phase]);
 
   // ─── Auto-save on OAuth redirect ────────────────────────────────
   useEffect(() => {
@@ -587,6 +596,43 @@ export default function CardPage() {
 
         {/* Share buttons */}
         <div className="cp-share" style={{ width: "480px", maxWidth: "100%", margin: "40px auto 0", display: "flex", gap: "12px", flexWrap: "wrap" }}>
+          {showMangaHint && (
+            <div
+              onClick={() => setShowMangaHint(false)}
+              style={{
+                width: "100%",
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+                padding: "10px 14px",
+                border: "1px solid rgba(6, 182, 212, 0.3)",
+                backgroundColor: "rgba(6, 182, 212, 0.04)",
+                marginBottom: "4px",
+                cursor: "pointer",
+                animation: "fadeSlideIn 0.4s ease forwards",
+              }}
+            >
+              <span style={{
+                fontFamily: "'DM Mono', monospace",
+                fontSize: "9px",
+                letterSpacing: "0.12em",
+                color: "#06B6D4",
+                textTransform: "uppercase",
+                lineHeight: 1.5,
+                flex: 1,
+              }}>
+                ↑ Save your arc to unlock your manga cover
+              </span>
+              <span style={{
+                fontFamily: "'DM Mono', monospace",
+                fontSize: "8px",
+                color: "#4a4438",
+                letterSpacing: "0.1em",
+              }}>
+                ✕
+              </span>
+            </div>
+          )}
           {[
             { key: "save", label: saveStatus === "saved" ? "ARC SAVED." : saveStatus === "saving" ? "SAVING..." : "SAVE", fn: handleActionClick },
             { key: "download", label: "DOWNLOAD", fn: handleActionClick },
@@ -597,6 +643,7 @@ export default function CardPage() {
             <button
               key={key}
               className="share-btn"
+              {...(key === "save" ? { "data-save-btn": true } : {})}
               onClick={fn}
               style={{
                 fontFamily: "'DM Mono', monospace",
@@ -809,12 +856,31 @@ export default function CardPage() {
           }
           .cp-share { flex-direction: column !important; width: 100% !important; }
           .share-btn { width: 100% !important; cursor: pointer !important; }
+          .cp-main { overflow-x: hidden !important; }
+          [data-save-btn] { animation: none !important; }
         }
         @keyframes fadeInOut {
           0% { opacity: 0; transform: translate(-50%, 20px); }
           15% { opacity: 1; transform: translate(-50%, 0); }
           85% { opacity: 1; transform: translate(-50%, 0); }
           100% { opacity: 0; transform: translate(-50%, -20px); }
+        }
+        [data-save-btn] {
+          border-color: #06B6D4 !important;
+          color: #06B6D4 !important;
+          box-shadow: 0 0 12px rgba(6, 182, 212, 0.15), 0 0 24px rgba(6, 182, 212, 0.07);
+          animation: savePulse 2.8s ease-in-out infinite;
+        }
+        [data-save-btn]:hover {
+          box-shadow: 0 0 18px rgba(6, 182, 212, 0.3), 0 0 36px rgba(6, 182, 212, 0.12);
+        }
+        @keyframes savePulse {
+          0%, 100% { box-shadow: 0 0 12px rgba(6, 182, 212, 0.15), 0 0 24px rgba(6, 182, 212, 0.07); }
+          50% { box-shadow: 0 0 20px rgba(6, 182, 212, 0.28), 0 0 40px rgba(6, 182, 212, 0.12); }
+        }
+        @keyframes fadeSlideIn {
+          from { opacity: 0; transform: translateY(-6px); }
+          to { opacity: 1; transform: translateY(0); }
         }
       `}} />
     </div>

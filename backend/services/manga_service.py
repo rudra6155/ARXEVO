@@ -63,64 +63,32 @@ def generate_manga_cover(
         if len(first_sentence) > 120:
             first_sentence = first_sentence[:117] + "..."
 
-    prompt = f"""The cover should feel like a collector's edition magazine from an alternate universe where this person became the protagonist of their own legendary story.
+    prompt = f"""The cover should feel like a collector's edition anime magazine from an alternate universe where this person became the protagonist of their own legendary story.
 
-Authentic 1990s Japanese anime magazine cover.
-Printed cel-animation aesthetic.
-Hand-painted illustration with visible brushwork.
-Editorial publishing design.
-Magazine cover, not a movie poster.
+Authentic 1990s Japanese anime magazine cover. Inspired by Newtype, Animage, early Shonen Jump promotional artwork. Professional editorial illustration. Printed cel-animation aesthetic. Hand-painted anime artwork. Subtle paper grain. Magazine cover, not a movie poster.
 
-Masthead at the very top reading "ARXEVO" in bold editorial font.
-Issue number "VOL.01" in top corner.
-Publication date and price in small editorial text near masthead.
+Large ARXEVO masthead at the top. Issue number "VOL.01". Publication details, barcode, editorial sidebars, feature headlines. Authentic magazine typography and layout.
 
-A short dramatic quote integrated as editorial caption text within the composition:
-"{first_sentence}"
-
-Foreground:
-The protagonist standing at the threshold of change.
-Human and relatable. Signs of effort and struggle on their face and posture.
-Distinct personality reflecting this archetype: {archetype.upper()}.
-Determined expression looking toward an uncertain future.
-Slight imperfections — not a generic hero.
-
-Midground:
+MAIN CHARACTER: A human protagonist reflecting this archetype: {archetype.upper()}.
 {visual}
-Symbolic representations of defining memories, struggles, failures, mentors, ambitions, and turning points from this story: {themes}.
-These symbols feel grounded, not floating — part of the environment.
+Distinct personality. Natural imperfections. Not a superhero. Not generic. The character should feel like a real person whose life has become worthy of a cover story.
 
-Background:
-Their future vision visualized as a city skyline, institution, invention, dream destination, or achievement.
-The background bleeds from dark shadow on the protagonist's side to light and possibility in the distance.
+COMPOSITION:
+Foreground: The protagonist standing at the threshold of transformation.
+Midground: Visual storytelling extracted directly from this biography — memories, struggles, inventions, achievements, mentors, failures, and turning points from: {themes}. These elements feel grounded in the environment, not floating.
+Background: A visualization of the future mission — dream destination, institution, invention, city, movement, or societal impact. Past, present, and future coexist in a single composition.
 
-Past, present, and future compressed into a single image.
-Narrative tension: the protagonist looks toward an unanswered future.
+NARRATIVE TENSION: The image should raise a question about what happens next. The protagonist looks toward an unanswered future.
 
-Authentic magazine typography integrated throughout.
-Feature headline text as part of the cover design.
-Editorial sidebar text along one edge.
-Small publication details in margins.
-Collector-edition border design.
-Professional magazine cover layout with visual hierarchy.
+EDITORIAL CAPTION: Integrate this as a short teaser line in editorial typography within the cover layout: "{first_sentence}"
 
-Art style: hand-painted anime illustration, cel animation color treatment,
-real brush textures, printed magazine paper texture, slight paper grain,
-halftone printing artifacts, 1990s collector edition quality.
-Strong ink outlines. Rich color palette. Dramatic lighting.
+EDITORIAL DESIGN: Strong focal hierarchy. Feature headline text as part of the cover design. Editorial sidebar text along one edge. Small publication details in margins. Collector-edition border design. Professional magazine cover layout.
 
-The viewer should immediately wonder:
-"What happened in this person's life, and where are they going next?"
+ART STYLE: Hand-painted anime illustration. Cel animation color treatment. Real brush textures. Printed magazine paper texture. Halftone printing artifacts. 1990s collector edition quality. Strong ink outlines. Rich color palette. Dramatic lighting. Cinematic atmosphere. High contrast shadows. Rich emotional depth.
 
-Avoid AI poster aesthetics.
-Avoid floating disconnected symbols.
-Avoid generic anime protagonists with no personality.
-Avoid random unmotivated text overlays.
-Avoid cluttered or chaotic compositions.
+The viewer should immediately think: "This looks like the first issue of a legendary story."
 
-Masterpiece editorial illustration. Extremely detailed.
-Sharp focal hierarchy. Cinematic atmosphere.
-High contrast shadows. Rich emotional depth."""
+AVOID: Generic anime protagonist. Floating disconnected icons. Random technology holograms. Corporate branding aesthetics. AI poster aesthetics. Excessive visual effects. Overcrowded collage layouts. LinkedIn-style motivation."""
 
     headers = {
         "Authorization": f"Bearer {HF_API_KEY}",

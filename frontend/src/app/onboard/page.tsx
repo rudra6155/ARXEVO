@@ -786,6 +786,8 @@ export default function Onboard() {
             width: 100% !important;
             font-size: 16px !important;
           }
+          main { padding: 48px 16px !important; }
+          #essay-textarea, #essay-write-textarea { min-height: 240px !important; }
         }
         @media (max-width: 480px) {
           .agent-row { gap: 6px !important; }

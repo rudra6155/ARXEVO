@@ -10,6 +10,8 @@
   --surface: #111109;
   --border: #2a2820;
   --border-faint: #1a1a16;
+  --cyan: #06B6D4;
+  --purple: #8B5CF6;
 
   /* Legacy aliases for components not yet updated */
   --bone: #e8e0d0;
