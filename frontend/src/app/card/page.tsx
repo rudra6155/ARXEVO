@@ -594,6 +594,141 @@ export default function CardPage() {
           </div>
         )}
 
+        {/* ── Locked manga preview ─────────────────────────────── */}
+        {phase === "done" && (
+          <div className="manga-locked-preview" style={{
+            width: "480px",
+            maxWidth: "100%",
+            margin: "48px auto 0",
+          }}>
+            {/* Section label */}
+            <div style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "12px",
+              marginBottom: "16px",
+            }}>
+              <div style={{ width: "16px", height: "1px", background: meta.color }} />
+              <span style={{
+                fontFamily: "'DM Mono', monospace",
+                fontSize: "9px",
+                letterSpacing: "0.22em",
+                color: meta.color,
+                textTransform: "uppercase",
+              }}>
+                CHAPTER 01 — ORIGIN COVER
+              </span>
+              <div style={{ flex: 1, height: "1px", background: `${meta.color}30` }} />
+            </div>
+
+            {/* Locked image container */}
+            <div style={{
+              position: "relative",
+              width: "100%",
+              aspectRatio: "1 / 1",
+              overflow: "hidden",
+              border: `1px solid #2a2820`,
+            }}>
+              {/* Sample manga cover — blurred and locked */}
+              <img
+                src="/manga-sample.jpg"
+                alt="Your manga origin cover — locked"
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                  filter: "blur(8px) brightness(0.45)",
+                  transform: "scale(1.08)",
+                  display: "block",
+                }}
+              />
+
+              {/* Frosted overlay */}
+              <div style={{
+                position: "absolute",
+                inset: 0,
+                background: "rgba(10,10,8,0.55)",
+                backdropFilter: "blur(2px)",
+              }} />
+
+              {/* Lock content */}
+              <div style={{
+                position: "absolute",
+                inset: 0,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "16px",
+                padding: "24px",
+                textAlign: "center",
+              }}>
+                {/* Lock icon */}
+                <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                  <rect x="5" y="13" width="18" height="13" rx="1" stroke={meta.color} strokeWidth="1.2" fill="none" />
+                  <path d="M9 13V9a5 5 0 0 1 10 0v4" stroke={meta.color} strokeWidth="1.2" fill="none" strokeLinecap="round" />
+                  <circle cx="14" cy="19" r="1.5" fill={meta.color} />
+                </svg>
+
+                <div>
+                  <div style={{
+                    fontFamily: "var(--font-cormorant)",
+                    fontWeight: 400,
+                    fontStyle: "italic",
+                    fontSize: "22px",
+                    color: "#e8e0d0",
+                    lineHeight: 1.3,
+                    marginBottom: "8px",
+                  }}>
+                    Your origin cover is waiting.
+                  </div>
+                  <div style={{
+                    fontFamily: "'DM Mono', monospace",
+                    fontSize: "10px",
+                    color: "#8a7e6e",
+                    letterSpacing: "0.08em",
+                    lineHeight: 1.6,
+                  }}>
+                    Save your arc to generate a collector's
+                    <br />edition manga cover of your story.
+                  </div>
+                </div>
+
+                {/* CTA button */}
+                <button
+                  onClick={handleActionClick}
+                  style={{
+                    fontFamily: "'DM Mono', monospace",
+                    fontSize: "10px",
+                    letterSpacing: "0.18em",
+                    textTransform: "uppercase",
+                    color: "#0a0a08",
+                    background: meta.color,
+                    border: "none",
+                    padding: "14px 28px",
+                    cursor: "pointer",
+                    outline: "none",
+                    transition: "opacity 0.2s ease",
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.opacity = "0.88"; }}
+                  onMouseLeave={e => { e.currentTarget.style.opacity = "1"; }}
+                >
+                  Save Arc + Unlock Cover
+                </button>
+
+                <div style={{
+                  fontFamily: "'DM Mono', monospace",
+                  fontSize: "8px",
+                  color: "#4a4438",
+                  letterSpacing: "0.1em",
+                }}>
+                  FREE · 15–30 SECONDS · COLLECTOR'S EDITION
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Share buttons */}
         <div className="cp-share" style={{ width: "480px", maxWidth: "100%", margin: "40px auto 0", display: "flex", gap: "12px", flexWrap: "wrap" }}>
           {showMangaHint && (
@@ -634,7 +769,7 @@ export default function CardPage() {
             </div>
           )}
           {[
-            { key: "save", label: saveStatus === "saved" ? "ARC SAVED." : saveStatus === "saving" ? "SAVING..." : "SAVE", fn: handleActionClick },
+            { key: "save", label: saveStatus === "saved" ? "ARC SAVED." : saveStatus === "saving" ? "SAVING..." : "SAVE ARC + UNLOCK COVER", fn: handleActionClick },
             { key: "download", label: "DOWNLOAD", fn: handleActionClick },
             { key: "whatsapp", label: "WHATSAPP", fn: handleActionClick },
             { key: "instagram", label: "INSTAGRAM", fn: handleActionClick },
@@ -848,6 +983,7 @@ export default function CardPage() {
       {/* Mobile responsive styles */}
       <style dangerouslySetInnerHTML={{ __html: `
         @media (max-width: 768px) {
+          .manga-locked-preview { margin: 32px auto 0 !important; }
           .cp-nav { padding: 16px 16px !important; }
           .cp-main { padding: 40px 16px 0 !important; }
           [data-card-container] {
